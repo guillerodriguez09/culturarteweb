@@ -1,0 +1,93 @@
+/* css específico para Alta Propuesta */
+
+
+.card-header {
+    background: linear-gradient(135deg, #007bff, #00bcd4);
+    color: #fff;
+    padding: 1rem 1.5rem;
+    border-bottom: none;
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.25);
+}
+
+/* Título */
+.card-header h3 {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+/* Cuerpo de la card */
+.card {
+    border: none;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+/* Etiquetas y campos */
+.form-label {
+    font-weight: 600;
+    color: #333;
+}
+
+.form-control,
+.form-select {
+    border-radius: 0.6rem;
+    border: 1px solid #ced4da;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #00aaff;
+    box-shadow: 0 0 0 0.25rem rgba(0, 170, 255, 0.25);
+}
+
+/* Campo de imagen */
+input[type="file"] {
+    padding: 0.4rem;
+}
+
+/* Checkboxes de retornos */
+.form-check-label {
+    color: #555;
+}
+
+.form-check-input:checked {
+    background-color: #00aaff;
+    border-color: #00aaff;
+}
+
+/* Botón principal */
+.btn-success {
+    background: linear-gradient(90deg, #28a745, #20c997);
+    border: none;
+    border-radius: 0.6rem;
+    font-weight: 600;
+    transition: all 0.25s ease;
+}
+
+.btn-success:hover {
+    background: linear-gradient(90deg, #20c997, #28a745);
+    transform: scale(1.02);
+}
+
+/* Mensajes de alerta */
+.alert {
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border: none;
+    font-weight: 500;
+}
+
+/* Fondo general */
+body {
+    background: linear-gradient(180deg, #e3f2fd, #ffffff);
+    min-height: 100vh;
+}
+
