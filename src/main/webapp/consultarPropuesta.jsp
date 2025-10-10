@@ -13,10 +13,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Consulta de Propuestas</title>
-    <link href="css/general.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/general.css" rel="stylesheet">
 </head>
-<body class="bg-light">
+<%@ include file="compartidos/header.jsp" %>
 
 <div class="container mt-4">
     <h2 class="text-center mb-4">Consulta de Propuestas</h2>
@@ -88,20 +88,12 @@
                 <% } %>
             </ul>
 
-            <% if (request.getAttribute("puedeCancelar") != null) { %>
-            <form action="cancelarPropuesta" method="post">
-                <input type="hidden" name="titulo" value="<%= sel.getTitulo() %>">
-                <button type="submit" class="btn btn-danger">Cancelar Propuesta</button>
-            </form>
-            <% } else if (request.getAttribute("puedeColaborar") != null) { %>
-            <a href="registrarColaboracion?titulo=<%= sel.getTitulo() %>" class="btn btn-success">Colaborar</a>
-            <% } %>
         </div>
     </div>
     <% } %>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+<%@ include file="compartidos/footer.jsp" %>
 </html>
 

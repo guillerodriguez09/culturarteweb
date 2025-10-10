@@ -73,7 +73,7 @@ public class AltaPropuestaServlet extends HttpServlet {
                 }
             }
 
-            // Obtener el archivo subido
+            // Obtener el archivo subido (DEBO CAMBIAR ESTO, NO FUNCIONA BIEN)
             Part filePart = req.getPart("imagen");
             String fileName = null;
             String relativePath = null;

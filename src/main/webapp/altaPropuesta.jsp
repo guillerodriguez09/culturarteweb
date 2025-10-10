@@ -13,12 +13,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="css/general.css" rel="stylesheet">
     <link href="css/altaPropuesta.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 
-<body class="bg-light">
-
+<jsp:include page="compartidos/header.jsp"/>
 <div class="container mt-5">
     <div class="card shadow-lg">
         <div class="card-header bg-primary text-white">
@@ -68,7 +66,7 @@
 
                 <div class="mb-3">
                     <label for="descripcion" class="form-label">Descripción</label>
-                    <textarea class="form-control" id="descripcion" name="descripcion" rows="3" required></textarea>
+                    <textarea class="form-control" id="descripcion" name="descripcion" rows="3"></textarea>
                 </div>
 
                 <div class="mb-3">
@@ -123,10 +121,10 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="js/validaciones.js"></script>
+<script src="js/validacionesGral.js"></script>
 <script src="js/altaPropuesta.js"></script>
 <script>
     document.querySelector("form").onsubmit = validarAltaPropuesta;
 </script>
-</body>
+<%@ include file="compartidos/footer.jsp" %>
 </html>
