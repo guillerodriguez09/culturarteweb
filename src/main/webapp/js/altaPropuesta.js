@@ -22,7 +22,7 @@ function validarAltaPropuesta() {
 
     // Validaciones básicas
     if (!validarCampoVacio(titulo, "Título")) return false;
-    if (!validarCampoVacio(descripcion, "Descripción")) return false;
+   // if (!validarCampoVacio(descripcion, "Descripción")) return false;
     if (!validarCampoVacio(lugar, "Lugar")) return false;
     if (!validarCampoVacio(fecha, "Fecha")) return false;
     if (!validarCampoVacio(precioEntrada, "Precio de Entrada")) return false;
