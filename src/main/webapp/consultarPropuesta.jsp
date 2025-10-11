@@ -23,7 +23,8 @@
 
     <!-- Tabs por estado -->
     <ul class="nav nav-tabs" id="estadoTabs" role="tablist">
-        <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#publicadas">Publicadas</a></li>
+        <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#creadas">Creadas</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#publicadas">Publicadas</a></li>
         <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#financiacion">En financiación</a></li>
         <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#financiadas">Financiadas</a></li>
         <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#noFinanciadas">No financiadas</a></li>
@@ -33,6 +34,7 @@
     <div class="tab-content mt-3">
         <%
             Map<String, List<DTOPropuesta>> grupos = Map.of(
+                    "creadas", (List<DTOPropuesta>) request.getAttribute("creadas"),
                     "publicadas", (List<DTOPropuesta>) request.getAttribute("publicadas"),
                     "financiacion", (List<DTOPropuesta>) request.getAttribute("enFinanciacion"),
                     "financiadas", (List<DTOPropuesta>) request.getAttribute("financiadas"),
@@ -41,7 +43,7 @@
             );
             for (String key : grupos.keySet()) {
         %>
-        <div class="tab-pane fade <%= key.equals("publicadas") ? "show active" : "" %>" id="<%= key %>">
+        <div class="tab-pane fade <%= key.equals("creadas") ? "show active" : "" %>" id="<%= key %>">
             <div class="list-group">
                 <%
                     List<DTOPropuesta> lista = grupos.get(key);
@@ -76,9 +78,11 @@
             <p><strong>Monto a reunir:</strong> $<%= sel.getMontoAReunir() %></p>
             <p><strong>Monto recaudado:</strong> $<%= sel.getMontoRecaudado() %></p>
             <% if (sel.getImagen() != null && !sel.getImagen().isEmpty()) { %>
-            <img src="<%= sel.getImagen().startsWith("/") ? sel.getImagen().substring(1) : sel.getImagen() %>"
-                 class="img-thumbnail" width="100" height="100">
-
+            <img src="<%= request.getContextPath() + "/" + sel.getImagen() %>"
+                 class="img-thumbnail shadow-sm" width="200" height="200" alt="Imagen de la propuesta">
+            <% } else { %>
+            <img src="<%= request.getContextPath() + "/imagenes/404.png" %>"
+                 class="img-thumbnail shadow-sm" width="200" height="200" alt="Sin imagen disponible">
             <% } %>
 
             <p class="mt-3"><strong>Colaboradores:</strong></p>

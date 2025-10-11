@@ -1,13 +1,5 @@
 // validaciones específicas para Alta Propuesta
 
-function validarCampoVacio(valor, nombreCampo) {
-    if (!valor || valor.trim() === "") {
-        alert(`El campo "${nombreCampo}" es obligatorio.`);
-        return false;
-    }
-    return true;
-}
-
 function validarAltaPropuesta() {
     const proponente = document.getElementById("proponenteNick").value;
     const categoria = document.getElementById("categoriaNombre").value;

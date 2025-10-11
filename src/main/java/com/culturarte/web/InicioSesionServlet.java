@@ -16,82 +16,79 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
 @WebServlet("/inicioSesion")
-@MultipartConfig
 public class InicioSesionServlet extends HttpServlet {
 
     final IColaboradorController colaController = Fabrica.getInstancia().getColaboradorController();
-    final IProponenteController propController = Fabrica.getInstancia().getProponenteController();
+    final IProponenteController  propController = Fabrica.getInstancia().getProponenteController();
 
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+
         req.setCharacterEncoding("UTF-8");
-        resp.setContentType("text/html;charset=UTF-8"); //por un tema de compatibilidad con tildes
+        resp.setContentType("text/html;charset=UTF-8");
 
-        HttpSession sesionActual = req.getSession(true);
+        String nickOMail   = req.getParameter("nickOMail");
+        String contrasenia = req.getParameter("contrasenia");
+
+        if (nickOMail == null || nickOMail.isBlank() || contrasenia == null || contrasenia.isBlank()) {
+            req.setAttribute("error", "Por favor ingrese nickname/correo y contraseña");
+            req.getRequestDispatcher("/inicioSesion.jsp").forward(req, resp);
+            return;
+        }
 
         try {
+            String tipoUsuario = null;
+            String contrReal   = null;
+            String nickReal    = null;
 
-            String nickOMail = req.getParameter("nickOMail");
-            String contrasenia = req.getParameter("contrasenia");
-            String tipoUsuario = "ODISEO";
-            String contr = "Penelope";
-
-            DTOProponente prop = new DTOProponente();
-            DTOProponente propMail = new DTOProponente();
-
-            DTOColaborador cola = new DTOColaborador();
-            DTOColaborador colaMail = new DTOColaborador();
-
-            if(nickOMail.isEmpty() || contrasenia.isEmpty()){
-                req.setAttribute("error", "Por favor ingrese nickname/correo y contraseña");
-            }
-
-            if(!nickOMail.contains("@")){
-
-                if(propController.obtenerProponente(nickOMail) != null ) {
-
-                    prop = propController.obtenerProponente(nickOMail);
-                    contr = prop.getContrasenia();
-                    tipoUsuario = "PROPONENTE";
-
-                }else if(colaController.obtenerColaborador(nickOMail) != null){
-
-                    cola = colaController.obtenerColaborador(nickOMail);
-                    contr = cola.getContrasenia();
-                    tipoUsuario = "COLABORADOR";
-
+            // Buscar por nick o correo
+            if (!nickOMail.contains("@")) {
+                DTOProponente p = propController.obtenerProponente(nickOMail);
+                if (p != null) { tipoUsuario = "PROPONENTE"; contrReal = p.getContrasenia(); nickReal = p.getNick(); }
+                if (tipoUsuario == null) {
+                    DTOColaborador c = colaController.obtenerColaborador(nickOMail);
+                    if (c != null) { tipoUsuario = "COLABORADOR"; contrReal = c.getContrasenia(); nickReal = c.getNick(); }
                 }
-            }else{
-
-                if(propController.obtenerProponenteCorreo(nickOMail) != null){
-
-                    propMail = propController.obtenerProponenteCorreo(nickOMail);
-                    contr = propMail.getContrasenia();
-                    tipoUsuario = "PROPONENTE";
-
-                }else if(colaController.obtenerColaboradorCorreo(nickOMail) != null){
-
-                    colaMail = colaController.obtenerColaboradorCorreo(nickOMail);
-                    contr = colaMail.getContrasenia();
-                    tipoUsuario = "COLABORADOR";
-
+            } else {
+                DTOProponente p = propController.obtenerProponenteCorreo(nickOMail);
+                if (p != null) { tipoUsuario = "PROPONENTE"; contrReal = p.getContrasenia(); nickReal = p.getNick(); }
+                if (tipoUsuario == null) {
+                    DTOColaborador c = colaController.obtenerColaboradorCorreo(nickOMail);
+                    if (c != null) { tipoUsuario = "COLABORADOR"; contrReal = c.getContrasenia(); nickReal = c.getNick(); }
                 }
             }
 
-            if(contr.equals(contrasenia)){
+            if (tipoUsuario == null) {
+                req.setAttribute("error", "Usuario no encontrado.");
+                req.getRequestDispatcher("/inicioSesion.jsp").forward(req, resp);
+                return;
+            }
 
-                Sesion sesion = new Sesion(nickOMail, contrasenia, tipoUsuario);
-                sesionActual.setAttribute("sesion", sesion);
-                req.setAttribute("mensaje", "Sesion iniciada correctamente");
-
-            }else{
+            if (!contrasenia.equals(contrReal)) {
                 req.setAttribute("error", "Usuario y/o contraseña incorrectos");
+                req.getRequestDispatcher("/inicioSesion.jsp").forward(req, resp);
+                return;
             }
 
-        }catch(Exception e){
-            req.setAttribute("error", " " + e.getMessage());
+            // setear atributos que usa el resto del sitio si el login dio OK
+            HttpSession sesion = req.getSession(true);
+
+
+            sesion.setAttribute("tipoUsuario", tipoUsuario);  // "PROPONENTE" | "COLABORADOR"
+            sesion.setAttribute("nick", nickReal);            // nick real
+            sesion.setAttribute("password", contrasenia);
+
+
+            sesion.setAttribute("sesion", new Sesion(nickReal, tipoUsuario, contrasenia));
+
+            //redirige al index
+            resp.sendRedirect(req.getContextPath() + "/index.jsp");
+
+
+        } catch (Exception e) {
+            req.setAttribute("error", "Error al iniciar sesión: " + e.getMessage());
+            req.getRequestDispatcher("/inicioSesion.jsp").forward(req, resp);
         }
-        req.getRequestDispatcher("/inicioSesion.jsp").forward(req, resp);
-
     }
-
 }

@@ -23,6 +23,7 @@ public class ConsultarPropServlet extends HttpServlet {
         resp.setContentType("text/html;charset=UTF-8");
 
         // Cargar propuestas por estado
+        req.setAttribute("creadas", propCtrl.listarPorEstado(EEstadoPropuesta.INGRESADA));
         req.setAttribute("publicadas", propCtrl.listarPorEstado(EEstadoPropuesta.PUBLICADA));
         req.setAttribute("enFinanciacion", propCtrl.listarPorEstado(EEstadoPropuesta.EN_FINANCIACION));
         req.setAttribute("financiadas", propCtrl.listarPorEstado(EEstadoPropuesta.FINANCIADA));
@@ -63,4 +64,3 @@ public class ConsultarPropServlet extends HttpServlet {
         doGet(req, resp); // recarga todo pero mantiene el detalle de la propuesta seleccionada
     }
 }
-
