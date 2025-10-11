@@ -12,6 +12,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 @WebServlet("/registrarColaboracion")
@@ -32,6 +33,10 @@ public class RegistrarColaboracionServlet extends HttpServlet {
         IPropuestaController propuestaCtrl = Fabrica.getInstancia().getPropuestaController();
         List<DTOPropuesta> propuestas = propuestaCtrl.listarPropuestasConProponente();
         req.setAttribute("propuestas", propuestas);
+
+        // Lista de tipos de retorno
+        List<ETipoRetorno> tiposRetorno = Arrays.asList(ETipoRetorno.values());
+        req.setAttribute("tiposRetorno", tiposRetorno);
 
         req.getRequestDispatcher("/registrarColaboracion.jsp").forward(req, resp);
     }
@@ -74,6 +79,6 @@ public class RegistrarColaboracionServlet extends HttpServlet {
             req.setAttribute("error", "Error al registrar colaboración: " + e.getMessage());
         }
 
-        doGet(req, resp); // Recarga la página con la lista de propuestas
+        doGet(req, resp);
     }
 }

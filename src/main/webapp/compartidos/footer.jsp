@@ -11,20 +11,14 @@
         <div class="mb-2">
             <a href="index.jsp" class="text-white text-decoration-none fw-semibold mx-2">Inicio</a> |
             <a href="consultarPropuesta" class="text-white text-decoration-none fw-semibold mx-2">Ver Propuestas</a> |
-            <a href="altaPropuesta" class="text-white text-decoration-none fw-semibold mx-2">Alta de Propuesta</a>
+            <a href="altaPropuesta" class="text-white text-decoration-none fw-semibold mx-2">Alta de Propuesta</a> |
+            <a href="registrarColaboracion" class="text-white text-decoration-none fw-semibold mx-2">Registrar Colaboración</a>
         </div>
 
         <p class="small mb-0">
             &copy; <%= java.time.Year.now() %> <strong>Culturarte</strong> — Programación de Aplicaciones - UTEC 💫
         </p>
     </div>
-        <div class="mb-2">
-            <a href="index.jsp" class="text-white mx-2">Inicio</a> |
-            <a href="consultarPropuesta" class="text-white mx-2">Ver Propuestas</a> |
-            <a href="altaPropuesta" class="text-white mx-2">Alta de Propuesta</a> |
-            <a href="registrarColaboracion" class="text-white mx-2">Registrar Colaboración</a>
-        </div>
-
 </footer>
 
 <!-- Bootstrap JS -->
@@ -32,5 +26,6 @@
 
 </body>
 </html>
+
 
 

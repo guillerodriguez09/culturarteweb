@@ -1,3 +1,18 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Culturarte</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/general.css" rel="stylesheet">
+</head>
+
+<body class="d-flex flex-column min-vh-100 bg-light">
+
 <!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top shadow-sm">
     <div class="container-fluid">
@@ -11,7 +26,6 @@
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item"><a class="nav-link" href="altaPropuesta">Tengo una Propuesta</a></li>
                 <li class="nav-item"><a class="nav-link" href="consultarPropuesta">Ver Propuestas</a></li>
-                <!-- Nuevo enlace siempre visible -->
                 <li class="nav-item"><a class="nav-link" href="registrarColaboracion">Registrar Colaboración</a></li>
             </ul>
 
@@ -38,3 +52,6 @@
         </div>
     </div>
 </nav>
+
+<!-- Margen superior para evitar que el contenido quede tapado por la navbar -->
+<div style="margin-top: 80px;"></div>
