@@ -45,10 +45,19 @@ public class InicioSesionServlet extends HttpServlet {
             // Buscar por nick o correo
             if (!nickOMail.contains("@")) {
                 DTOProponente p = propController.obtenerProponente(nickOMail);
-                if (p != null) { tipoUsuario = "PROPONENTE"; contrReal = p.getContrasenia(); nickReal = p.getNick(); }
+                if (p != null) {
+                    tipoUsuario = "PROPONENTE";
+                    contrReal = p.getContrasenia();
+                    nickReal = p.getNick();
+                }
+
                 if (tipoUsuario == null) {
                     DTOColaborador c = colaController.obtenerColaborador(nickOMail);
-                    if (c != null) { tipoUsuario = "COLABORADOR"; contrReal = c.getContrasenia(); nickReal = c.getNick(); }
+                    if (c != null) {
+                        tipoUsuario = "COLABORADOR";
+                        contrReal = c.getContrasenia();
+                        nickReal = c.getNick();
+                    }
                 }
             } else {
                 DTOProponente p = propController.obtenerProponenteCorreo(nickOMail);
@@ -78,7 +87,6 @@ public class InicioSesionServlet extends HttpServlet {
             sesion.setAttribute("tipoUsuario", tipoUsuario);  // "PROPONENTE" | "COLABORADOR"
             sesion.setAttribute("nick", nickReal);            // nick real
             sesion.setAttribute("password", contrasenia);
-
 
             sesion.setAttribute("sesion", new Sesion(nickReal, tipoUsuario, contrasenia));
 

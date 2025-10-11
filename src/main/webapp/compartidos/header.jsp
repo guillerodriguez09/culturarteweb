@@ -48,7 +48,7 @@
                 <c:choose>
                     <c:when test="${not empty sessionScope.sesion.nickOMail}">
                         <li class="nav-item"><a class="nav-link" href="perfil.jsp">${sessionScope.sesion.nickOMail}</a></li>
-                        <li class="nav-item"><a class="nav-link" href="cerrarSesion">Salir</a></li>
+                        <li class="nav-item"><a class="nav-link" href="cierreSesion">Salir</a></li>
                     </c:when>
                     <c:otherwise>
                         <li class="nav-item"><a class="nav-link" href="altaPerfil.jsp">Registrarse</a></li>
