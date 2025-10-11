@@ -43,10 +43,10 @@
                     <label for="correo" class="form-label">Correo</label>
                     <input type="text" class="form-control" id="correo" name="correo" required>
                 </div>
-                    <div class="mb-3">
-                        <label for="fechaNac" class="form-label">Fecha de Nacimiento</label>
-                        <input type="date" class="form-control" id="fechaNac" name="fechaNac" required>
-                    </div>
+                <div class="mb-3">
+                    <label for="fechaNac" class="form-label">Fecha de Nacimiento</label>
+                    <input type="date" class="form-control" id="fechaNac" name="fechaNac" required>
+                </div>
                 <div class="mb-3">
                     <label for="dirImagen" class="form-label">Imagen (Opcional)</label>
                     <input type="file" class="form-control" id="dirImagen" name="dirImagen" accept="image/*">
