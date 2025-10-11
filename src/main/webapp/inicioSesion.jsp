@@ -26,10 +26,10 @@
                     </c:if>
 
                     <!-- Formulario -->
-                    <form action="iniciarSesion" method="post" class="needs-validation" novalidate>
+                    <form action="inicioSesion" method="post" class="needs-validation" novalidate>
                         <div class="mb-3">
-                            <label for="nick" class="form-label">Usuario o Correo</label>
-                            <input type="text" class="form-control" id="nick" name="nick" required
+                            <label for="nickOMail" class="form-label">Usuario o Correo</label>
+                            <input type="text" class="form-control" id="nickOMail" name="nickOMail" required
                                    placeholder="Ej: guille">
                             <div class="invalid-feedback">Debe ingresar su usuario o correo.</div>
                         </div>
@@ -54,7 +54,22 @@
             </div>
         </div>
     </div>
+
+    <% if(request.getAttribute("mensaje") != null) { %>
+    <div class="alert alert-info mt-3">
+        <%= request.getAttribute("mensaje") %>
+    </div>
+    <% } %>
+
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/validacionesGral.js"></script>
+<script src="js/inicioSesion.js" ></script>
+
+<script>
+    document.querySelector("form").onsubmit = validarInicioSesion;
+</script>
 
 <jsp:include page="compartidos/footer.jsp"/>
 
