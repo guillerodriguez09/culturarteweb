@@ -10,11 +10,10 @@ import com.culturarte.logica.fabrica.Fabrica;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Part;
+import javax.servlet.http.*;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,16 +23,22 @@ import java.util.List;
 public class AltaPropuestaServlet extends HttpServlet {
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+
         req.setCharacterEncoding("UTF-8");
-        resp.setContentType("text/html;charset=UTF-8"); //por un tema de compatibilidad con tildes
-        /*
-        String tipoUsuario = (String) req.getSession().getAttribute("tipoUsuario");
-        if (tipoUsuario == null || !tipoUsuario.equals("PROPONENTE")) {
-            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Solo los proponentes pueden acceder a esta página.");
+        resp.setContentType("text/html;charset=UTF-8");
+
+        HttpSession session = req.getSession(false);
+        String tipoUsuario = (session != null) ? (String) session.getAttribute("tipoUsuario") : null;
+
+        if (tipoUsuario == null || !tipoUsuario.equalsIgnoreCase("Proponente")) {
+            //redirige al login en vez de 403
+            resp.sendRedirect(req.getContextPath() + "/inicioSesion.jsp?loginRequired=1");
             return;
-        }*/ //esto es para cuando este el inicio de sesion, para que solo lo hagan los proponentes
-        cargarListas(req);
+        }
+
+        cargarCategorias(req);
         req.getRequestDispatcher("/altaPropuesta.jsp").forward(req, resp);
     }
 
@@ -41,13 +46,17 @@ public class AltaPropuestaServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         req.setCharacterEncoding("UTF-8");
         resp.setContentType("text/html;charset=UTF-8");
-/*
-        String tipoUsuario = (String) req.getSession().getAttribute("tipoUsuario");
-        if (tipoUsuario == null || !tipoUsuario.equals("PROPONENTE")) {
-            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "No tiene permisos para crear propuestas.");
+
+        HttpSession session = req.getSession(false);
+        String tipoUsuario   = (session != null) ? (String) session.getAttribute("tipoUsuario") : null;
+        String proponenteNick= (session != null) ? (String) session.getAttribute("nick") : null;
+
+        if (tipoUsuario == null || !tipoUsuario.equalsIgnoreCase("Proponente") || proponenteNick == null) {
+            // redirige al login en vez de 403
+            resp.sendRedirect(req.getContextPath() + "/inicioSesion.jsp?loginRequired=1");
             return;
         }
-        */
+
         try {
             //Recibir datos del form
             String titulo = req.getParameter("titulo");
@@ -60,7 +69,6 @@ public class AltaPropuestaServlet extends HttpServlet {
                 categoria = "Categoría"; // raíz por defecto
             }
 
-            String proponente = req.getParameter("proponenteNick");
             int precioEntrada = Integer.parseInt(req.getParameter("precioEntrada"));
             int montoAReunir = Integer.parseInt(req.getParameter("montoAReunir"));
 
@@ -73,28 +81,32 @@ public class AltaPropuestaServlet extends HttpServlet {
                 }
             }
 
-            // Obtener el archivo subido (DEBO CAMBIAR ESTO, NO FUNCIONA BIEN)
+            // === Manejo de la imagen subida ===
             Part filePart = req.getPart("imagen");
             String fileName = null;
             String relativePath = null;
 
             if (filePart != null && filePart.getSize() > 0) {
-                fileName = java.nio.file.Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
+                // Nombre limpio del archivo subido
+                fileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
 
-                // Ruta absoluta a la carpeta 'imagenes'
-                String uploadPath = getServletContext().getRealPath("") + "imagenes";
-                java.io.File uploadDir = new java.io.File(uploadPath);
+                // Ruta absoluta a la carpeta imagenes dentro del WAR desplegado
+                String uploadPath = getServletContext().getRealPath("/imagenes");
+
+                // Crear la carpeta si no existe
+                File uploadDir = new File(uploadPath);
                 if (!uploadDir.exists()) {
-                    uploadDir.mkdir();
+                    uploadDir.mkdirs();
                 }
 
-                // Guardar archivo en la carpeta
-                filePart.write(uploadPath + java.io.File.separator + fileName);
+                // Guardar el archivo
+                filePart.write(uploadPath + File.separator + fileName);
 
-                // Guardar ruta relativa para BD
+                // Guardar ruta relativa para la BD
                 relativePath = "imagenes/" + fileName;
             } else {
-                relativePath = ""; // sin imagen
+                // Si no se sube imagen, usar una genérica (si querés tener un placeholder)
+                relativePath = "imagenes/404.png";
             }
 
 
@@ -105,13 +117,13 @@ public class AltaPropuestaServlet extends HttpServlet {
             dto.setLugar(lugar);
             dto.setFecha(LocalDate.parse(fechaStr));
             dto.setCategoriaNombre(categoria);
-            dto.setProponenteNick(proponente);
+            dto.setProponenteNick(proponenteNick);
             dto.setPrecioEntrada(precioEntrada);
             dto.setMontoAReunir(montoAReunir);
             dto.setRetornos(retornos);
             dto.setImagen(relativePath);
 
-            //llama al controlador
+
             IPropuestaController ctrl = Fabrica.getInstancia().getPropuestaController();
             ctrl.altaPropuesta(dto);
 
@@ -122,25 +134,18 @@ public class AltaPropuestaServlet extends HttpServlet {
         }
 
         //cargar combos y reenviar
-        cargarListas(req);
+        cargarCategorias(req);
         req.getRequestDispatcher("/altaPropuesta.jsp").forward(req, resp);
     }
 
-    private void cargarListas(HttpServletRequest req) {
-
-        //luego solo sera listar las categorias, no proponentes
+    private void cargarCategorias(HttpServletRequest req) {
         ICategoriaController catCtrl = Fabrica.getInstancia().getCategoriaController();
-        IProponenteController propCtrl = Fabrica.getInstancia().getProponenteController();
-
         List<String> categorias = catCtrl.listarCategorias()
                 .stream()
-                .filter(c -> !c.equalsIgnoreCase("Categoría")) // 👈 no mostramos la raíz
+                .filter(c -> !c.equalsIgnoreCase("Categoría"))
                 .toList();
 
-        List<String> proponentes = propCtrl.listarProponentes(); //esto luego se va
-
         req.setAttribute("categorias", categorias);
-        req.setAttribute("proponentes", proponentes);
     }
-
 }
+

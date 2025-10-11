@@ -24,21 +24,6 @@
         </div>
         <div class="card-body">
             <form action="altaPropuesta" method="post" enctype="multipart/form-data">
-            <!-- Proponente esto despues se saca porque va el logueado-->
-                <div class="mb-3">
-                    <label for="proponenteNick" class="form-label">Proponente</label>
-                    <select class="form-select" id="proponenteNick" name="proponenteNick" required>
-                        <option value="">Seleccione un proponente...</option>
-                        <%
-                            List<String> props = (List<String>) request.getAttribute("proponentes");
-                            if (props != null) {
-                                for (String p : props) {
-                        %>
-                        <option value="<%= p %>"><%= p %></option>
-                        <% }} %>
-                    </select>
-                </div>
-
                 <!-- Categoría -->
                 <div class="mb-3">
                     <select class="form-select" id="categoriaNombre" name="categoriaNombre">
