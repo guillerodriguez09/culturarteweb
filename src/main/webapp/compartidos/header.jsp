@@ -37,11 +37,12 @@
             </ul>
 
             <!-- Campo de búsqueda -->
-            <form class="d-flex" action="buscarPropuesta" method="get">
+            <form class="d-flex ms-auto" action="buscarPropuesta" method="get">
                 <input class="form-control me-2" type="search" name="q"
-                       placeholder="Título, descripción, lugar" aria-label="Buscar">
-                <button class="btn btn-light" type="submit">Buscar</button>
+                       placeholder="Buscar propuestas..." aria-label="Buscar" required>
+                <button class="btn btn-outline-light" type="submit">Buscar</button>
             </form>
+
 
             <!-- Sesión -->
             <ul class="navbar-nav ms-3">
