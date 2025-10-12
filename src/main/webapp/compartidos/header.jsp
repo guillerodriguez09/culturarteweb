@@ -1,10 +1,3 @@
-<%--
-  Created by IntelliJ IDEA.
-  User: guillerodriguezz
-  Date: 4/10/25
-  Time: 19:07
-  To change this template use File | Settings | File Templates.
---%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
@@ -12,7 +5,6 @@
 <head>
     <meta charset="UTF-8">
     <title>Culturarte</title>
-
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -34,6 +26,9 @@
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item"><a class="nav-link" href="altaPropuesta">Tengo una Propuesta</a></li>
                 <li class="nav-item"><a class="nav-link" href="consultarPropuesta">Ver Propuestas</a></li>
+                <li class="nav-item"><a class="nav-link" href="registrarColaboracion">Registrar Colaboración</a></li>
+                <li class="nav-item"><a class="nav-link" href="seguirUsuario">Seguir Usuario</a></li>
+                <li class="nav-item"><a class="nav-link" href="dejarSeguirUsuario">Dejar de Seguir Usuario</a></li>
             </ul>
 
             <!-- Campo de búsqueda -->
@@ -63,5 +58,3 @@
 
 <!-- Margen superior para evitar que el contenido quede tapado por la navbar -->
 <div style="margin-top: 80px;"></div>
-
-
