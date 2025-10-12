@@ -24,6 +24,9 @@
         <a href="seguirUsuario" class="list-group-item list-group-item-action">
             Seguir Usuario
         </a>
+        <a href="dejarSeguirUsuario" class="list-group-item list-group-item-action">
+                Dejar de Seguir Usuario
+        </a>
     </div>
 </div>
 

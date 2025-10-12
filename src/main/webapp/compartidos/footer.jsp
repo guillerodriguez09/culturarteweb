@@ -14,6 +14,7 @@
             <a href="altaPropuesta" class="text-white text-decoration-none fw-semibold mx-2">Alta de Propuesta</a> |
             <a href="registrarColaboracion" class="text-white text-decoration-none fw-semibold mx-2">Registrar Colaboración</a>
             <a href="seguirUsuario" class="text-white text-decoration-none fw-semibold mx-2">Seguir Usuario</a>
+            <a href="dejarSeguirUsuario" class="text-white text-decoration-none fw-semibold mx-2">Dejar de Seguir Usuario</a>
         </div>
 
         <p class="small mb-0">
