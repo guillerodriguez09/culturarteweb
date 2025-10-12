@@ -34,7 +34,6 @@ public class RegistrarColaboracionServlet extends HttpServlet {
         List<DTOPropuesta> propuestas = propuestaCtrl.listarPropuestasConProponente();
         req.setAttribute("propuestas", propuestas);
 
-        // Lista de tipos de retorno
         List<ETipoRetorno> tiposRetorno = Arrays.asList(ETipoRetorno.values());
         req.setAttribute("tiposRetorno", tiposRetorno);
 

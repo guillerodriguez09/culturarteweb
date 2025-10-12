@@ -21,6 +21,9 @@
         <a href="registrarColaboracion" class="list-group-item list-group-item-action">
             Registrar Colaboración
         </a>
+        <a href="seguirUsuario" class="list-group-item list-group-item-action">
+            Seguir Usuario
+        </a>
     </div>
 </div>
 

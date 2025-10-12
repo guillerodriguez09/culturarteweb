@@ -16,7 +16,6 @@
     <form id="formColaboracion" action="registrarColaboracion" method="post"
           onsubmit="return validarRegistrarColaboracion()">
 
-        <!-- Selección de propuesta -->
         <div class="mb-3">
             <label for="propuestaTitulo" class="form-label">Seleccione la propuesta:</label>
             <select class="form-select" id="propuestaTitulo" name="propuestaTitulo"
@@ -38,7 +37,7 @@
             </select>
         </div>
 
-        <!-- Información de la propuesta -->
+        <!-- Info de la propuesta -->
         <div id="infoPropuesta" class="border p-3 mb-3" style="display:none;">
             <p><strong>Descripción:</strong> <span id="descripcion"></span></p>
             <p><strong>Lugar:</strong> <span id="lugar"></span></p>
@@ -49,13 +48,11 @@
             <p><strong>Monto recaudado:</strong> $<span id="montoRecaudado"></span></p>
         </div>
 
-        <!-- Monto de la colaboración -->
         <div class="mb-3">
             <label for="monto" class="form-label">Monto de la colaboración:</label>
             <input type="number" class="form-control" id="monto" name="monto" min="1" required>
         </div>
 
-        <!-- Tipo de retorno -->
         <div class="mb-3">
             <label for="tipoRetorno" class="form-label">Tipo de retorno:</label>
             <select class="form-select" id="tipoRetorno" name="tipoRetorno" required>
