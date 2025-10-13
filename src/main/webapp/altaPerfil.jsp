@@ -51,6 +51,29 @@
                     <label for="dirImagen" class="form-label">Imagen (Opcional)</label>
                     <input type="file" class="form-control" id="dirImagen" name="dirImagen" accept="image/*">
                 </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-check-label" for="radioP">Proponente</label>
+                        <input class="form-check-input" type="radio" name="tipoUsuario" value="PROPONENTE" id="radioP" onclick="mostrarCampos('1')">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-check-label" for="radioC">Colaborador</label>
+                        <input class="form-check-input" type="radio" name="tipoUsuario" value="COLABORADOR" id="radioC" onclick="mostrarCampos('2')">
+                    </div>
+                </div>
+
+                <div class="mb-3" id="todoDireccion" style="display:none;">
+                    <label for="direccion" class="form-label">Direccion</label>
+                    <input type="text" class="form-control" id="direccion" name="direccion" required>
+                </div>
+                <div class="mb-3" id="todoBiografia" style="display:none;">
+                    <label for="biografia" class="form-label">Biografia</label>
+                    <textarea class="form-control" id="biografia" name="biografia" rows="3"></textarea>
+                </div>
+                <div class="mb-3" id="todoLink" style="display:none;">
+                    <label for="link" class="form-label">Link</label>
+                    <input type="text" class="form-control" id="link" name="link">
+                </div>
 
                 <button type="submit" class="btn btn-success w-100">Crear Perfil</button>
             </form>

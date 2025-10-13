@@ -8,6 +8,10 @@ function validarAltaPerfil(){
     const fechaNac = document.getElementById("fechaNac").value;
     const dirImagen = document.getElementById("dirImagen").value;
 
+    const direccion = document.getElementById("direccion").value;
+    const tipoUsuario = document.querySelectorAll('input[name="tipoUsuario"]');
+    let usrSelec = null;
+
     if(!validarCampoVacio(nickname, "nick")) return false;
     if(!validarCampoVacio(nombre, "nombre")) return false;
     if(!validarCampoVacio(apellido, "apellido")) return false;
@@ -23,6 +27,43 @@ function validarAltaPerfil(){
         }
     }
 
+    for(const usr of tipoUsuario){
+        if(usr.checked){
+            usrSelec = usr.value;
+            break;
+        }
+    }
+
+    if(usrSelec) {
+        if (usrSelec.toString() === "PROPONENTE") {
+            if(!validarCampoVacio(direccion, "direccion")) return false;
+        }
+    }else{
+        alert("Seleccione un tipo de usuario");
+    }
+
+
+
     return true
+
+}
+
+function mostrarCampos(opt){
+
+    const todoDireccion = document.getElementById("todoDireccion");
+    const todoBiografia = document.getElementById("todoBiografia");
+    const todoLink = document.getElementById("todoLink");
+
+    if(opt === '1'){
+        todoDireccion.style.display = "block";
+        todoBiografia.style.display = "block";
+        todoLink.style.display = "block";
+    } else if(opt === '2'){
+        todoDireccion.style.display = "none";
+        todoBiografia.style.display = "none";
+        todoLink.style.display = "none";
+    }
+
+
 
 }
