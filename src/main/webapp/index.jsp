@@ -16,9 +16,6 @@
     <a href="consultarPropuesta" class="list-group-item list-group-item-action">
         Consulta de Propuesta
     </a>
-    <a href="altaPerfil" class="list-group-item list-group-item-action">
-        Alta de Perfil
-    </a>
 </div>
 <%@ include file="compartidos/footer.jsp" %>
 </html>
