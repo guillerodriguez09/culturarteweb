@@ -39,7 +39,7 @@ function validarAltaPerfil(){
             if(!validarCampoVacio(direccion, "direccion")) return false;
         }
     }else{
-        alert("Seleccione un tipo de usuario");
+        window.alert("Seleccione un tipo de usuario");
     }
 
 
@@ -53,17 +53,18 @@ function mostrarCampos(opt){
     const todoDireccion = document.getElementById("todoDireccion");
     const todoBiografia = document.getElementById("todoBiografia");
     const todoLink = document.getElementById("todoLink");
+    const direccion = document.getElementById("direccion");
 
     if(opt === '1'){
+        direccion.required = true;
         todoDireccion.style.display = "block";
         todoBiografia.style.display = "block";
         todoLink.style.display = "block";
     } else if(opt === '2'){
+        direccion.required = false;
         todoDireccion.style.display = "none";
         todoBiografia.style.display = "none";
         todoLink.style.display = "none";
     }
-
-
 
 }

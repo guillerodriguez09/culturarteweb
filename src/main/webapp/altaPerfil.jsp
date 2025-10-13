@@ -22,7 +22,7 @@
             <h3 class="mb-0">Alta de Perfil</h3>
         </div>
         <div class ="card-body">
-            <form action=altaPerfil" method="post" enctype="multipart/form-data">
+            <form action="altaPerfil" method="post" enctype="multipart/form-data">
                 <div class="mb-3">
                     <label for="nick" class="form-label">Nickname</label>
                     <input type="text" class="form-control" id="nick" name="nick" required>
@@ -64,7 +64,7 @@
 
                 <div class="mb-3" id="todoDireccion" style="display:none;">
                     <label for="direccion" class="form-label">Direccion</label>
-                    <input type="text" class="form-control" id="direccion" name="direccion" required>
+                    <input type="text" class="form-control" id="direccion" name="direccion">
                 </div>
                 <div class="mb-3" id="todoBiografia" style="display:none;">
                     <label for="biografia" class="form-label">Biografia</label>
@@ -80,9 +80,9 @@
         </div>
     </div>
 
-    <% if (request.getAttribute("mensaje") != null){ %>
+    <% if (request.getAttribute("mensaje") != null) { %>
     <div class="alert alert-info mt-3">
-        <%= request.getAttribute("mensaje")%>
+        <%= request.getAttribute("mensaje") %>
     </div>
     <% } %>
 
@@ -96,5 +96,6 @@
     document.querySelector("form").onsubmit = validarAltaPerfil;
 </script>
 
+<%@ include file="compartidos/footer.jsp" %>
 </body>
 </html>
