@@ -12,7 +12,10 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 
 @WebServlet("/altaPerfil")
@@ -46,7 +49,33 @@ public class AltaPerfilServlet extends HttpServlet {
             String contrasenia = req.getParameter("contrasenia");
             String correo = req.getParameter("correo");
             String fechaNacStr = req.getParameter("fechaNac");
-            String dirImagen = req.getParameter("dirImagen");
+
+            Part filePart = req.getPart("dirImagen");
+            String fileName = null;
+            String dirImagen = null;
+
+            if (filePart != null && filePart.getSize() > 0) {
+                // Nombre limpio del archivo subido
+                fileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
+
+                // Ruta absoluta a la carpeta imagenes dentro del WAR desplegado
+                String uploadPath = getServletContext().getRealPath("/imagenes");
+
+                // Crear la carpeta si no existe
+                File uploadDir = new File(uploadPath);
+                if (!uploadDir.exists()) {
+                    uploadDir.mkdirs();
+                }
+
+                // Guardar el archivo
+                filePart.write(uploadPath + File.separator + fileName);
+
+                // Guardar ruta relativa para la BD
+                dirImagen = "imagenes/" + fileName;
+            } else {
+                // Si no se sube imagen, usar una genérica (si querés tener un placeholder)
+                dirImagen = "imagenes/404.png";
+            }
 
             String tipoUsuario = req.getParameter("tipoUsuario");
 
