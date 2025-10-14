@@ -94,6 +94,23 @@
             <p><strong>Link</strong><%= pro.getLink() %></p>
         </div>
     </div>
+    <% }else if(col != null){ %>
+    <div class="card mt-5 shadow">
+        <div class="card-body">
+            <h4 class="card-title"><%= col.getNick() %></h4>
+            <p><strong>Nombre:</strong><%= col.getNombre() %></p>
+            <p><strong>Apellido:</strong><%= col.getApellido() %></p>
+            <p><strong>Contraseña:</strong><%= col.getContrasenia() %></p>
+            <p><strong>Correo:</strong><%= col.getCorreo() %></p>
+            <p><strong>Fecha de Nacimiento:</strong><%= col.getFechaNac() %></p>
+
+            <% if(col.getDirImagen() != null && !col.getDirImagen().isEmpty()){  %>
+            <img src="<%= request.getContextPath() + "/" + col.getDirImagen() %>" class="img-thumbnail shadow-sm" width="200" height="200" alt="Imagen perfil">
+            <% }else{ %>
+            <img src="<%= request.getContextPath() + "/imagenes/404.png" %>" class="img-thumbnail shadow-sm" width="200" height="200" alt="Sin imagen disponible">
+            <% } %>
+        </div>
+    </div>
     <% } %>
 
 </div>
