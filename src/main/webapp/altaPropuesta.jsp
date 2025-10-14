@@ -22,6 +22,11 @@
         <div class="card-header bg-primary text-white">
             <h3 class="mb-0">Alta de Propuesta</h3>
         </div>
+         <% if (request.getAttribute("mensaje") != null) { %>
+        <div class="alert alert-info mt-3">
+            <%= request.getAttribute("mensaje") %>
+        </div>
+        <% } %>
         <div class="card-body">
             <form action="altaPropuesta" method="post" enctype="multipart/form-data">
                 <!-- Categoría -->
@@ -97,12 +102,6 @@
             </form>
         </div>
     </div>
-
-    <% if (request.getAttribute("mensaje") != null) { %>
-    <div class="alert alert-info mt-3">
-        <%= request.getAttribute("mensaje") %>
-    </div>
-    <% } %>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
