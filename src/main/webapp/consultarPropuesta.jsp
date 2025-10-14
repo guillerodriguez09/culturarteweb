@@ -16,6 +16,19 @@
 <div class="container mt-4">
     <h2 class="text-center mb-4">Consulta de Propuestas</h2>
 
+    <!-- Mensajes de éxito o error -->
+    <% if (request.getAttribute("mensaje") != null) { %>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <%= request.getAttribute("mensaje") %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <% } else if (request.getAttribute("error") != null) { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <%= request.getAttribute("error") %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <% } %>
+
     <!-- Tabs por estado -->
     <ul class="nav nav-tabs" id="estadoTabs" role="tablist">
         <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#publicadas">Publicadas</a></li>
@@ -55,6 +68,7 @@
                 <p class="text-muted p-3">No hay propuestas en este estado.</p>
                 <% } %>
             </div>
+
         </div>
         <% } %>
     </div>
@@ -81,6 +95,7 @@
                  class="img-thumbnail shadow-sm" width="200" height="200" alt="Sin imagen disponible">
             <% } %>
 
+
             <p class="mt-3"><strong>Colaboradores:</strong></p>
             <ul>
                 <% for (String c : sel.getColaboradores()) { %>
@@ -88,16 +103,19 @@
                 <% } %>
             </ul>
 
+
             <div class="mt-3">
                 <%
                     String tipoUsuario = (String) session.getAttribute("tipoUsuario");
                     String usuario = (String) session.getAttribute("nick");
+
 
                     if (usuario != null && sel != null && tipoUsuario != null) {
                         // Si es PROPONENTE y dueño de la propuesta
                         if (tipoUsuario.equals("PROPONENTE") && usuario.equals(sel.getProponenteNick())) {
                             if ("FINANCIADA".equalsIgnoreCase(sel.getEstadoActual())) {
                 %>
+
                 <form action="cancelarPropuesta" method="post">
                     <input type="hidden" name="titulo" value="<%= sel.getTitulo() %>">
                     <button class="btn btn-danger">Cancelar Propuesta</button>
@@ -106,12 +124,16 @@
                     }
                 }
                 // Si es COLABORADOR y no colaboró todavía
-                else if (tipoUsuario.equals("COLABORADOR") && !sel.getColaboradores().contains(usuario)) {
+                    else if (tipoUsuario.equals("COLABORADOR")
+                            && !sel.getColaboradores().contains(usuario)
+                            && ("PUBLICADA".equalsIgnoreCase(sel.getEstadoActual())
+                            || "EN_FINANCIACION".equalsIgnoreCase(sel.getEstadoActual()))) {
                 %>
                 <a href="registrarColaboracion?titulo=<%= sel.getTitulo() %>" class="btn btn-success">Colaborar</a>
                 <%
-                    }
-                } else {
+                }
+                }
+                else {
                 %>
                 <p class="text-muted">Iniciá sesión para colaborar o cancelar una propuesta.</p>
                 <%

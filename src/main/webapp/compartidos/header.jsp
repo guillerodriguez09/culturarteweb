@@ -27,9 +27,6 @@
                 <li class="nav-item"><a class="nav-link" href="altaPropuesta">Tengo una Propuesta</a></li>
                 <li class="nav-item"><a class="nav-link" href="consultarPropuesta">Ver Propuestas</a></li>
                 <li class="nav-item"><a class="nav-link" href="consultaPerfil">Ver Usuarios</a></li>
-                <li class="nav-item"><a class="nav-link" href="registrarColaboracion">Registrar Colaboración</a></li>
-                <li class="nav-item"><a class="nav-link" href="seguirUsuario">Seguir Usuario</a></li>
-                <li class="nav-item"><a class="nav-link" href="dejarSeguirUsuario">Dejar de Seguir Usuario</a></li>
             </ul>
 
             <!-- Campo de búsqueda -->

@@ -15,15 +15,15 @@ import java.util.List;
 
 @WebServlet("/consultarPropuesta")
 public class ConsultarPropServlet extends HttpServlet {
-    private final IPropuestaController propCtrl = Fabrica.getInstancia().getPropuestaController();
+
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         req.setCharacterEncoding("UTF-8");
         resp.setContentType("text/html;charset=UTF-8");
+        IPropuestaController propCtrl = Fabrica.getInstancia().getPropuestaController();
 
         // Cargar propuestas por estado
-        req.setAttribute("creadas", propCtrl.listarPorEstado(EEstadoPropuesta.INGRESADA));
         req.setAttribute("publicadas", propCtrl.listarPorEstado(EEstadoPropuesta.PUBLICADA));
         req.setAttribute("enFinanciacion", propCtrl.listarPorEstado(EEstadoPropuesta.EN_FINANCIACION));
         req.setAttribute("financiadas", propCtrl.listarPorEstado(EEstadoPropuesta.FINANCIADA));
@@ -37,25 +37,14 @@ public class ConsultarPropServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         req.setCharacterEncoding("UTF-8");
         resp.setContentType("text/html;charset=UTF-8");
-
+        IPropuestaController propCtrl = Fabrica.getInstancia().getPropuestaController();
         String titulo = req.getParameter("titulo");
-        //String usuarioLogueado = (String) req.getSession().getAttribute("usuarioNick"); // si más adelante hay login
 
-        try {
+      try{
             DTOPropuesta dto = propCtrl.consultarPropuesta(titulo);
             req.setAttribute("propuestaSeleccionada", dto);
             req.setAttribute("colaboradores", dto.getColaboradores());
             req.setAttribute("montoRecaudado", dto.getMontoRecaudado());
-
-            /* para cuando este la sesion
-            // Mostrar botones según quién la consulte
-            if (usuarioLogueado != null) {
-                if (usuarioLogueado.equals(dto.getProponenteNick())) {
-                    req.setAttribute("puedeCancelar", true);
-                } else if (!dto.getColaboradores().contains(usuarioLogueado)) {
-                    req.setAttribute("puedeColaborar", true);
-                }
-            }*/
 
         } catch (Exception e) {
             req.setAttribute("error", e.getMessage());
