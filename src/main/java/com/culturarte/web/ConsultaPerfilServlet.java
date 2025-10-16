@@ -3,8 +3,10 @@ package com.culturarte.web;
 
 import com.culturarte.logica.controllers.IColaboradorController;
 import com.culturarte.logica.controllers.IProponenteController;
+import com.culturarte.logica.controllers.ISeguimientoController;
 import com.culturarte.logica.dtos.DTOColaborador;
 import com.culturarte.logica.dtos.DTOProponente;
+import com.culturarte.logica.dtos.DTOPropuesta;
 import com.culturarte.logica.fabrica.Fabrica;
 
 import javax.servlet.ServletException;
@@ -14,6 +16,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 @WebServlet("/consultaPerfil")
 @MultipartConfig
@@ -21,6 +26,7 @@ public class ConsultaPerfilServlet extends HttpServlet {
 
     private final IProponenteController propController = Fabrica.getInstancia().getProponenteController();
     private final IColaboradorController colaController = Fabrica.getInstancia().getColaboradorController();
+    private final ISeguimientoController seguiController = Fabrica.getInstancia().getSeguimientoController();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -40,18 +46,67 @@ public class ConsultaPerfilServlet extends HttpServlet {
 
         String tipoUsr = req.getParameter("tipoUsr");
         String nick = req.getParameter("nick");
+        List<String> seguidooresNick;
+        List<String> seguidoosDeNick;
+
+        List<DTOProponente> listaProponentes = propController.listarTodos();
+        List<DTOColaborador> listaColaboradores = colaController.listarTodos();
+
+        req.setAttribute("proponentes", listaProponentes);
+        req.setAttribute("colaboradores", listaColaboradores);
 
         try{
 
             if("proponente".equals(tipoUsr)){
 
-                DTOProponente dtoProponente = propController.obtenerProponente(nick);
+                List<Object[]> propConPropu = propController.obtenerTodPropConPropu(nick);
+                DTOProponente dtoProponente = new DTOProponente();
+                List<DTOPropuesta> dtoPropuestas = new ArrayList<>();
+
+                if(propConPropu != null && !propConPropu.isEmpty()) {
+                    for (Object[] fila : propConPropu) {
+                        DTOProponente prop = (DTOProponente) fila[0];
+                        DTOPropuesta propu = (DTOPropuesta) fila[1];
+
+                        dtoProponente = prop;
+                        dtoPropuestas.add(propu);
+
+                    }
+
+                }else{
+                    dtoProponente = propController.obtenerProponente(nick);
+                }
                 req.setAttribute("proponenteSeleccionado", dtoProponente);
+                req.setAttribute("propuestasDeProponente", dtoPropuestas);
+                seguidooresNick = seguiController.listarSeguidoresDeNick(nick);
+                req.setAttribute("seguidooresNick", seguidooresNick);
+                seguidoosDeNick = seguiController.listarSeguidosDeNick(nick);
+                req.setAttribute("seguidoosDeNick", seguidoosDeNick);
 
             }else if("colaborador".equals(tipoUsr)){
 
-                DTOColaborador dtoColaborador = colaController.obtenerColaborador(nick);
+                List<Object[]> colConPropu = colaController.obtenerTodColConPropu(nick);
+                DTOColaborador dtoColaborador = new DTOColaborador();
+                List<DTOPropuesta> dtoPropuestas = new ArrayList<>();
+                if(colConPropu != null && !colConPropu.isEmpty()) {
+                    for (Object[] fila : colConPropu) {
+                        DTOColaborador col = (DTOColaborador) fila[0];
+                        DTOPropuesta propu = (DTOPropuesta) fila[1];
+
+                        dtoColaborador = col;
+                        dtoPropuestas.add(propu);
+
+                    }
+
+                }else{
+                    dtoColaborador = colaController.obtenerColaborador(nick);
+                }
                 req.setAttribute("colaboradorSeleccionado", dtoColaborador);
+                req.setAttribute("colaboracionesDeColaborador", dtoPropuestas);
+                seguidooresNick = seguiController.listarSeguidoresDeNick(nick);
+                req.setAttribute("seguidooresNick", seguidooresNick);
+                seguidoosDeNick = seguiController.listarSeguidosDeNick(nick);
+                req.setAttribute("seguidoosDeNick", seguidoosDeNick);
 
             }
 
@@ -59,8 +114,7 @@ public class ConsultaPerfilServlet extends HttpServlet {
             req.setAttribute("error", e.getMessage());
         }
 
-        doGet(req, resp);
-
+        req.getRequestDispatcher("/consultaPerfil.jsp").forward(req, resp);
     }
 
 }
