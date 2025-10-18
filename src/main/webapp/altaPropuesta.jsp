@@ -22,14 +22,15 @@
         <div class="card-header bg-primary text-white">
             <h3 class="mb-0">Alta de Propuesta</h3>
         </div>
-         <% if (request.getAttribute("mensaje") != null) { %>
+        <% if (request.getAttribute("mensaje") != null) { %>
         <div class="alert alert-info mt-3">
             <%= request.getAttribute("mensaje") %>
         </div>
         <% } %>
         <div class="card-body">
-            <form action="altaPropuesta" method="post" enctype="multipart/form-data">
-                <!-- Categoría -->
+
+            <form action="altaPropuesta" method="post" enctype="multipart/form-data" id="form-alta-propuesta">
+
                 <div class="mb-3">
                     <select class="form-select" id="categoriaNombre" name="categoriaNombre">
                         <option value="">Seleccione una categoría...</option>
@@ -48,7 +49,6 @@
                     </select>
                 </div>
 
-                <!-- Datos básicos -->
                 <div class="mb-3">
                     <label for="titulo" class="form-label">Título</label>
                     <input type="text" class="form-control" id="titulo" name="titulo" required>
@@ -80,7 +80,6 @@
                     <input type="number" class="form-control" id="montoAReunir" name="montoAReunir" min="1" required>
                 </div>
 
-                <!-- Retornos -->
                 <div class="mb-3">
                     <label class="form-label">Retornos</label><br>
                     <div class="form-check">
@@ -105,10 +104,11 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="js/validacionesGral.js"></script>
 <script src="js/altaPropuesta.js"></script>
+
 <script>
-    document.querySelector("form").onsubmit = validarAltaPropuesta;
+    document.getElementById("form-alta-propuesta").onsubmit = validarAltaPropuesta;
 </script>
+
 <%@ include file="compartidos/footer.jsp" %>
 </html>

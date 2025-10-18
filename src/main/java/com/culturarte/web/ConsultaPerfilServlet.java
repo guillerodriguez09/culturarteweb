@@ -4,9 +4,14 @@ package com.culturarte.web;
 import com.culturarte.logica.controllers.IColaboradorController;
 import com.culturarte.logica.controllers.IProponenteController;
 import com.culturarte.logica.controllers.ISeguimientoController;
+
+import com.culturarte.logica.controllers.IColaboracionController;
 import com.culturarte.logica.dtos.DTOColaborador;
 import com.culturarte.logica.dtos.DTOProponente;
 import com.culturarte.logica.dtos.DTOPropuesta;
+
+import com.culturarte.logica.dtos.DTOColabConsulta;
+import javax.servlet.http.HttpSession;
 import com.culturarte.logica.fabrica.Fabrica;
 
 import javax.servlet.ServletException;
@@ -18,7 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+
 
 @WebServlet("/consultaPerfil")
 @MultipartConfig
@@ -27,6 +32,7 @@ public class ConsultaPerfilServlet extends HttpServlet {
     private final IProponenteController propController = Fabrica.getInstancia().getProponenteController();
     private final IColaboradorController colaController = Fabrica.getInstancia().getColaboradorController();
     private final ISeguimientoController seguiController = Fabrica.getInstancia().getSeguimientoController();
+    private final IColaboracionController colabController = Fabrica.getInstancia().getColaboracionController();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -44,6 +50,13 @@ public class ConsultaPerfilServlet extends HttpServlet {
         req.setCharacterEncoding("UTF-8");
         resp.setContentType("text/html;charset=UTF-8");
 
+        // usuario en sesion
+        HttpSession session = req.getSession(false);
+        String nickSession = null;
+        if (session != null) {
+            nickSession = (String) session.getAttribute("nick");
+        }
+
         String tipoUsr = req.getParameter("tipoUsr");
         String nick = req.getParameter("nick");
         List<String> seguidooresNick;
@@ -55,10 +68,13 @@ public class ConsultaPerfilServlet extends HttpServlet {
         req.setAttribute("proponentes", listaProponentes);
         req.setAttribute("colaboradores", listaColaboradores);
 
+        // ver si es perfil propio y pasarlo al jsp
+        boolean esPropioPerfil = (nickSession != null && nickSession.equals(nick));
+        req.setAttribute("esPropioPerfil", esPropioPerfil);
+
         try{
 
             if("proponente".equals(tipoUsr)){
-
                 List<Object[]> propConPropu = propController.obtenerTodPropConPropu(nick);
                 DTOProponente dtoProponente = new DTOProponente();
                 List<DTOPropuesta> dtoPropuestas = new ArrayList<>();
@@ -70,9 +86,7 @@ public class ConsultaPerfilServlet extends HttpServlet {
 
                         dtoProponente = prop;
                         dtoPropuestas.add(propu);
-
                     }
-
                 }else{
                     dtoProponente = propController.obtenerProponente(nick);
                 }
@@ -85,6 +99,7 @@ public class ConsultaPerfilServlet extends HttpServlet {
 
             }else if("colaborador".equals(tipoUsr)){
 
+                // lista simple para perfil ajeno
                 List<Object[]> colConPropu = colaController.obtenerTodColConPropu(nick);
                 DTOColaborador dtoColaborador = new DTOColaborador();
                 List<DTOPropuesta> dtoPropuestas = new ArrayList<>();
@@ -95,14 +110,20 @@ public class ConsultaPerfilServlet extends HttpServlet {
 
                         dtoColaborador = col;
                         dtoPropuestas.add(propu);
-
                     }
-
                 }else{
                     dtoColaborador = colaController.obtenerColaborador(nick);
                 }
                 req.setAttribute("colaboradorSeleccionado", dtoColaborador);
-                req.setAttribute("colaboracionesDeColaborador", dtoPropuestas);
+                req.setAttribute("colaboracionesDeColaborador", dtoPropuestas); // Lista simple
+
+                // PERFIL PROPIO DE COLABORADOR
+                if (esPropioPerfil) {
+                    // usamos ColaboracionController para obtener la lista detallada
+                    List<DTOColabConsulta> detalles = colabController.consultarColaboracionesPorColaborador(nick);
+                    req.setAttribute("colaboracionesDetalladas", detalles);
+                }
+
                 seguidooresNick = seguiController.listarSeguidoresDeNick(nick);
                 req.setAttribute("seguidooresNick", seguidooresNick);
                 seguidoosDeNick = seguiController.listarSeguidosDeNick(nick);
@@ -116,5 +137,4 @@ public class ConsultaPerfilServlet extends HttpServlet {
 
         req.getRequestDispatcher("/consultaPerfil.jsp").forward(req, resp);
     }
-
 }
