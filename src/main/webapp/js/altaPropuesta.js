@@ -1,8 +1,17 @@
-// validaciones específicas para Alta Propuesta
+// ==========================================================
+// FUNCIÓN DE VALIDACIÓN (AHORA ESTÁ DENTRO DE ESTE ARCHIVO)
+// ==========================================================
+function validarCampoVacio(valor, nombreCampo) {
+    if (!valor || valor.trim() === "") {
+        alert(`Debe ingresar un valor en ${nombreCampo}.`);
+        return false;
+    }
+    return true;
+}
 
 function validarAltaPropuesta() {
-    const proponente = document.getElementById("proponenteNick").value;
-    const categoria = document.getElementById("categoriaNombre").value;
+
+    // Obtenemos todos los valores del formulario
     const titulo = document.getElementById("titulo").value.trim();
     const descripcion = document.getElementById("descripcion").value.trim();
     const lugar = document.getElementById("lugar").value.trim();
@@ -12,9 +21,9 @@ function validarAltaPropuesta() {
     const retornos = document.querySelectorAll('input[name="retornos"]:checked');
     const imagen = document.getElementById("imagen").value;
 
-    // Validaciones básicas
+
     if (!validarCampoVacio(titulo, "Título")) return false;
-   // if (!validarCampoVacio(descripcion, "Descripción")) return false;
+    // if (!validarCampoVacio(descripcion, "Descripción")) return false;
     if (!validarCampoVacio(lugar, "Lugar")) return false;
     if (!validarCampoVacio(fecha, "Fecha")) return false;
     if (!validarCampoVacio(precioEntrada, "Precio de Entrada")) return false;
@@ -44,7 +53,7 @@ function validarAltaPropuesta() {
     }
 
 
-    if (imagen) {
+    if (imagen) { // Solo valida si se seleccionó un archivo
         const extension = imagen.split('.').pop().toLowerCase();
         if (!["jpg", "jpeg", "png"].includes(extension)) {
             alert("La imagen debe ser JPG o PNG.");
@@ -52,6 +61,6 @@ function validarAltaPropuesta() {
         }
     }
 
+    // Si todook
     return true;
 }
-

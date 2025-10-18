@@ -23,7 +23,7 @@ public class ConsultarPropServlet extends HttpServlet {
         resp.setContentType("text/html;charset=UTF-8");
         IPropuestaController propCtrl = Fabrica.getInstancia().getPropuestaController();
 
-        // Cargar propuestas por estado
+        // Cargar las propuestas por estado
         req.setAttribute("publicadas", propCtrl.listarPorEstado(EEstadoPropuesta.PUBLICADA));
         req.setAttribute("enFinanciacion", propCtrl.listarPorEstado(EEstadoPropuesta.EN_FINANCIACION));
         req.setAttribute("financiadas", propCtrl.listarPorEstado(EEstadoPropuesta.FINANCIADA));
@@ -50,6 +50,6 @@ public class ConsultarPropServlet extends HttpServlet {
             req.setAttribute("error", e.getMessage());
         }
 
-        doGet(req, resp); // recarga todo pero mantiene el detalle de la propuesta seleccionada
+        doGet(req, resp); // recarga tod pero mantiene el detalle de la propuesta seleccionada
     }
 }
