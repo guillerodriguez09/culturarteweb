@@ -3,6 +3,21 @@
 
 <main class="container mt-5 mb-5 flex-grow-1">
 
+    <%
+        String mensaje = (String) session.getAttribute("mensaje");
+        if (mensaje != null) {
+    %>
+    <div class="container mt-3">
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <%= mensaje %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+    <%
+            session.removeAttribute("mensaje");
+        }
+    %>
+
     <div class="text-center mb-5">
         <h1 class="fw-bold text-primary">🎭 Bienvenido a Culturarte</h1>
         <p class="lead text-muted">Descubrí, apoyá y compartí propuestas culturales.</p>

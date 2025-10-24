@@ -81,7 +81,7 @@ public class AltaPropuestaServlet extends HttpServlet {
                 }
             }
 
-            // === Manejo de la imagen subida ===
+            // Manejo de la imagen subida
             Part filePart = req.getPart("imagen");
             String fileName = null;
             String relativePath = null;
@@ -105,7 +105,7 @@ public class AltaPropuestaServlet extends HttpServlet {
                 // Guardar ruta relativa para la BD
                 relativePath = "imagenes/" + fileName;
             } else {
-                // Si no se sube imagen, usar una genérica (si querés tener un placeholder)
+                // Si no se sube imagen, usar una genérica
                 relativePath = "imagenes/404.png";
             }
 
@@ -126,16 +126,15 @@ public class AltaPropuestaServlet extends HttpServlet {
 
             IPropuestaController ctrl = Fabrica.getInstancia().getPropuestaController();
             ctrl.altaPropuesta(dto);
+            session.setAttribute("mensaje", "Propuesta creada con éxito: " + titulo);
 
-            req.setAttribute("mensaje", "Propuesta creada con éxito: " + titulo);
-
-        } catch (Exception e) {
-            req.setAttribute("error", " " + e.getMessage());
+            resp.sendRedirect(req.getContextPath() + "/index.jsp");
         }
-
-        //cargar combos y reenviar
-        cargarCategorias(req);
-        req.getRequestDispatcher("/altaPropuesta.jsp").forward(req, resp);
+        catch (Exception e) {
+            req.setAttribute("error", "Error al crear la propuesta: " + e.getMessage());
+            cargarCategorias(req);
+            req.getRequestDispatcher("/altaPropuesta.jsp").forward(req, resp);
+        }
     }
 
     private void cargarCategorias(HttpServletRequest req) {

@@ -29,6 +29,12 @@ function validarAltaPropuesta() {
     if (!validarCampoVacio(precioEntrada, "Precio de Entrada")) return false;
     if (!validarCampoVacio(montoAReunir, "Monto a Reunir")) return false;
 
+    const regexTitulo = /^[\p{L}\p{N} ]+$/u;
+
+    if (!regexTitulo.test(titulo)) {
+        alert("El título solo puede contener letras, números y espacios. No se permiten símbolos.");
+        return false;
+    }
 
     const hoy = new Date().toISOString().split("T")[0];
     if (fecha < hoy) {
