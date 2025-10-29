@@ -169,7 +169,20 @@
                     <div class="collapse" id="listaSeguidos">
                         <div class="card card-body mt-3">
                             <h6 class="card-title">Seguidos</h6>
-                            <ul><% for (String s : seguidoos){ %><li><%= s %></li><% } %></ul>
+                            <ul><% for (String s : seguidoos){ %>
+
+                                <form class="d-flex ms-auto" action="dejarSeguirUsuario" method="post" novalidate>
+
+                                    <div>
+                                    <label for="usuarioSeguido" class="form-label"><%= s %></label>
+                                    <input type="text" class="form-control" value="<%=s%>" id="usuarioSeguido" name="usuarioSeguido" style="display:none">
+
+                                <%-- <li ><%= s %></li> --%>
+                                    </div>
+                                    <button type="submit" class="d-flex ms-auto btn btn-outline-danger shadow-sm py-3 bi bi-person-dash"> Dejar de seguir</button>
+                                </form>
+
+                                <% } %></ul>
                         </div>
                     </div>
 

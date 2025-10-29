@@ -72,6 +72,6 @@ public class DejarSeguirUsuarioServlet extends HttpServlet {
             req.setAttribute("mensajeError", "Error al intentar dejar de seguir: " + e.getMessage());
         }
 
-        doGet(req, resp);
+        req.getRequestDispatcher("/consultaPerfil").forward(req, resp);
     }
 }
