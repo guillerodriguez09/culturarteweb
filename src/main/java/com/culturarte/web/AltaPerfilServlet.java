@@ -9,10 +9,7 @@ import com.culturarte.logica.fabrica.Fabrica;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Part;
+import javax.servlet.http.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -122,11 +119,19 @@ public class AltaPerfilServlet extends HttpServlet {
 
             }
 
+            HttpSession sesion = req.getSession(true);
+
+            sesion.setAttribute("tipoUsuario", tipoUsuario);  // "PROPONENTE" | "COLABORADOR"
+            sesion.setAttribute("nick", nick);            // nick real
+            sesion.setAttribute("password", contrasenia);
+
+            sesion.setAttribute("sesion", new Sesion(nick, tipoUsuario, contrasenia));
+
         }catch(Exception e){
             req.setAttribute("error", e.getMessage());
         }
 
-        req.getRequestDispatcher("/altaPerfil.jsp").forward(req, resp);
+        req.getRequestDispatcher("/index.jsp").forward(req, resp);
 
     }
 
