@@ -194,6 +194,7 @@
 
                         <span class="badge bg-primary fs-6 mb-3"><%= sel.getEstadoActual() %></span>
 
+                        <p class="card-text"><strong>Proponente creador:</strong><br> <%= sel.getProponenteNick() %></p>
                         <p class="card-text"><strong>Descripción:</strong><br> <%= sel.getDescripcion() %></p>
                         <p><strong>Lugar:</strong> <%= sel.getLugar() %></p>
 
