@@ -7,7 +7,6 @@
 <%@ page import="java.util.*, com.culturarte.logica.dtos.DTOColaborador" %>
 <%@ page import="java.util.*, com.culturarte.logica.dtos.DTOPropuesta" %>
 
-<%-- !! IMPORTAR ICONOS !! --%>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
 <html>
@@ -40,6 +39,9 @@
     List<DTOPropuesta> propuestasDeProponente = (List<DTOPropuesta>) request.getAttribute("propuestasDeProponente");
     List<DTOPropuesta> colaboracionesDeColaborador = (List<DTOPropuesta>) request.getAttribute("colaboracionesDeColaborador");
     List<DTOColabConsulta> colabsDetalladas = (List<DTOColabConsulta>) request.getAttribute("colaboracionesDetalladas");
+
+    boolean loSigo = (request.getAttribute("loSigo") != null) ? (Boolean) request.getAttribute("loSigo") : false;
+    String nickSesion = (String) session.getAttribute("nick");
 %>
 
 <div class="container mt-4">
@@ -47,7 +49,6 @@
 
     <div class="row">
 
-        <%-- col izq, lista de users --%>
 
         <div class="col-md-5">
             <div class="list-group" style="max-height: 80vh; overflow-y: auto;">
@@ -99,11 +100,7 @@
                 <% } %>
             </div>
         </div>
-        <%-- fin COLUMNA IZQUIERDA --%>
 
-
-
-        <%-- col derecha (detalle del perfil) --%>
 
         <div class="col-md-7">
 
@@ -122,14 +119,36 @@
                             <h5 class="mt-3"><%= pro.getNick() %></h5>
                             <span class="badge bg-primary">Proponente</span>
 
+                            <% if (nickSesion != null && !esPropioPerfil) { %>
+                            <div class="mt-3">
+                                <% if (loSigo) { %>
+                                <form action="dejarSeguirUsuario" method="post" style="display: inline;">
+                                    <input type="hidden" name="usuarioSeguido" value="<%= pro.getNick() %>">
+                                    <input type="hidden" name="tipoUsr" value="proponente">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                                        <i class="bi bi-person-dash"></i> Dejar de Seguir
+                                    </button>
+                                </form>
+                                <% } else { %>
+                                <form action="seguirUsuario" method="post" style="display: inline;">
+                                    <input type="hidden" name="usuarioSeguido" value="<%= pro.getNick() %>">
+                                    <input type="hidden" name="tipoUsr" value="proponente">
+                                    <button type="submit" class="btn btn-primary btn-sm">
+                                        <i class="bi bi-person-plus"></i> Seguir
+                                    </button>
+                                </form>
+                                <% } %>
+                            </div>
+                            <% } %>
+
                             <div class="d-flex justify-content-around text-center mt-3 pt-3 border-top">
                                 <div>
                                     <h5 class="mb-0"><%= seguidoores.size() %></h5>
                                     <small class="text-muted" data-bs-toggle="collapse" href="#listaSeguidores" style="cursor: pointer;">Seguidores</small>
                                 </div>
                                 <div>
-                                    <h5 class="mb-0"><%= seguidoos.size() %></h5>
-                                    <small class="text-muted" data-bs-toggle="collapse" href="#listaSeguidos" style="cursor: pointer;">Seguidos</small>
+                                    <h5 class="mb-0" id="contador-seguidos"><%= seguidoos.size() %></h5>
+                                    <small class="text-muted" data-bs-toggle="collapse" href="#listaSeguidos" ...>Seguidos</small>
                                 </div>
                             </div>
                         </div>
@@ -169,25 +188,21 @@
                     <div class="collapse" id="listaSeguidos">
                         <div class="card card-body mt-3">
                             <h6 class="card-title">Seguidos</h6>
-                            <ul><% for (String s : seguidoos){ %>
-
-                                <%if (esPropioPerfil) {%>
-                                <form class="d-flex ms-auto" action="dejarSeguirUsuario" method="post" novalidate>
-
-                                    <div>
-                                    <label for="usuarioSeguido" class="form-label"><%= s %></label>
-                                    <input type="text" class="form-control" value="<%=s%>" id="usuarioSeguido" name="usuarioSeguido" style="display:none">
-
-                                    </div>
-                                    <button type="submit" class="d-flex ms-auto btn btn-outline-danger shadow-sm py-3 bi bi-person-dash"> Dejar de seguir</button>
-                                </form>
-                                <% } else { %>
-
-                                <li ><%= s %></li>
-
+                            <ul class="list-group list-group-flush">
+                                <% for (String s : seguidoos) { %>
+                                <li class="list-group-item d-flex justify-content-between align-items-center" id="item-seguido-<%= s %>">
+                                    <span><%= s %></span>
+                                    <% if (esPropioPerfil) { %>
+                                    <a href="#" class="btn btn-outline-danger btn-sm btn-seguir-ajax"
+                                       data-action="dejar"
+                                       data-nick="<%= s %>"
+                                       data-remove-on-success="item-seguido-<%= s %>">
+                                        Dejar de seguir
+                                    </a>
+                                    <% } %>
+                                </li>
                                 <% } %>
-
-                                <% } %></ul>
+                            </ul>
                         </div>
                     </div>
 
@@ -254,14 +269,37 @@
                             <h5 class="mt-3"><%= col.getNick() %></h5>
                             <span class="badge bg-secondary">Colaborador</span>
 
+
+                            <% if (nickSesion != null && !esPropioPerfil) { %>
+                            <div class="mt-3">
+                                <% if (loSigo) { %>
+                                <form action="dejarSeguirUsuario" method="post" style="display: inline;">
+                                    <input type="hidden" name="usuarioSeguido" value="<%= col.getNick() %>">
+                                    <input type="hidden" name="tipoUsr" value="colaborador">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                                        <i class="bi bi-person-dash"></i> Dejar de Seguir
+                                    </button>
+                                </form>
+                                <% } else { %>
+                                <form action="seguirUsuario" method="post" style="display: inline;">
+                                    <input type="hidden" name="usuarioSeguido" value="<%= col.getNick() %>">
+                                    <input type="hidden" name="tipoUsr" value="colaborador">
+                                    <button type="submit" class="btn btn-primary btn-sm">
+                                        <i class="bi bi-person-plus"></i> Seguir
+                                    </button>
+                                </form>
+                                <% } %>
+                            </div>
+                            <% } %>
+
                             <div class="d-flex justify-content-around text-center mt-3 pt-3 border-top">
                                 <div>
                                     <h5 class="mb-0"><%= seguidoores.size() %></h5>
                                     <small class="text-muted" data-bs-toggle="collapse" href="#listaSeguidores" style="cursor: pointer;">Seguidores</small>
                                 </div>
                                 <div>
-                                    <h5 class="mb-0"><%= seguidoos.size() %></h5>
-                                    <small class="text-muted" data-bs-toggle="collapse" href="#listaSeguidos" style="cursor: pointer;">Seguidos</small>
+                                    <h5 class="mb-0" id="contador-seguidos"><%= seguidoos.size() %></h5>
+                                    <small class="text-muted" data-bs-toggle="collapse" href="#listaSeguidos" ...>Seguidos</small>
                                 </div>
                             </div>
                         </div>
@@ -293,25 +331,21 @@
                     <div class="collapse" id="listaSeguidos">
                         <div class="card card-body mt-3">
                             <h6 class="card-title">Seguidos</h6>
-                            <ul><% for (String s : seguidoos){ %>
-
-                                <%if (esPropioPerfil) {%>
-                                <form class="d-flex ms-auto" action="dejarSeguirUsuario" method="post" novalidate>
-
-                                    <div>
-                                        <label for="usuarioSeguido" class="form-label"><%= s %></label>
-                                        <input type="text" class="form-control" value="<%=s%>" id="usuarioSeguido" name="usuarioSeguido" style="display:none">
-
-                                    </div>
-                                    <button type="submit" class="d-flex ms-auto btn btn-outline-danger shadow-sm py-3 bi bi-person-dash"> Dejar de seguir</button>
-                                </form>
-                                <% } else { %>
-
-                                <li ><%= s %></li>
-
+                            <ul class="list-group list-group-flush">
+                                <% for (String s : seguidoos) { %>
+                                <li class="list-group-item d-flex justify-content-between align-items-center" id="item-seguido-<%= s %>">
+                                    <span><%= s %></span>
+                                    <% if (esPropioPerfil) { %>
+                                    <a href="#" class="btn btn-outline-danger btn-sm btn-seguir-ajax"
+                                       data-action="dejar"
+                                       data-nick="<%= s %>"
+                                       data-remove-on-success="item-seguido-<%= s %>">
+                                        Dejar de seguir
+                                    </a>
+                                    <% } %>
+                                </li>
                                 <% } %>
-
-                                <% } %></ul>
+                            </ul>
                         </div>
                     </div>
 
@@ -349,10 +383,10 @@
 
                                     <% if (p.getImagen() != null && !p.getImagen().isEmpty()) { %>
                                     <img src="<%= request.getContextPath() + "/" + p.getImagen() %>"
-                                         class="img-fluid rounded shadow-sm" alt="Imagen de la propuesta"> <%-- Clase cambiada a img-fluid --%>
+                                         class="img-fluid rounded shadow-sm" alt="Imagen de la propuesta">
                                     <% } else { %>
                                     <img src="<%= request.getContextPath() + "/imagenes/404.png" %>"
-                                         class="img-fluid rounded shadow-sm" alt="Sin imagen disponible"> <%-- Clase cambiada a img-fluid --%>
+                                         class="img-fluid rounded shadow-sm" alt="Sin imagen disponible">
                                     <% } %>
                                 </div>
                             </div>
@@ -364,7 +398,6 @@
                 </div>
             </div>
 
-            <%-- si aun no selecciona nada --%>
             <% } else { %>
             <div class="d-flex align-items-center justify-content-center bg-light rounded-3 text-center" style="min-height: 50vh;">
                 <div>
@@ -383,5 +416,58 @@
 </div>
 
 <%@ include file="compartidos/footer.jsp" %>
+
+<script>
+    //agrego ajax para logica del seguir/dejardeseguir
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const botonesAjax = document.querySelectorAll('.btn-seguir-ajax');
+
+        botonesAjax.forEach(boton => {
+            boton.addEventListener('click', function(event) {
+                event.preventDefault();
+
+                const nickUsuario = this.dataset.nick;
+                const accion = this.dataset.action;
+                const idElementoABorrar = this.dataset.removeOnSuccess;
+
+                if (accion !== 'dejar') return;
+
+                const formData = new FormData();
+                formData.append('usuarioSeguido', nickUsuario);
+                formData.append('ajax', 'true');
+
+                fetch('dejarSeguirUsuario', {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            // borrar de la lista
+                            const elemento = document.getElementById(idElementoABorrar);
+                            if (elemento) {
+                                elemento.remove();
+                            }
+
+                            // actualizar el contador
+                            const contador = document.getElementById('contador-seguidos');
+                            if (contador) {
+                                let num = parseInt(contador.innerText);
+                                if (!isNaN(num) && num > 0) {
+                                    contador.innerText = num - 1;
+                                }
+                            }
+                        } else {
+                            alert('Error al intentar dejar de seguir.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error de red:', error);
+                        alert('Error de conexión.');
+                    });
+            });
+        });
+    });
+</script>
 </body>
 </html>

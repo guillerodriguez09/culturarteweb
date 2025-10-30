@@ -34,16 +34,6 @@
                 <i class="bi bi-search me-2"></i> Consultar Propuestas
             </a>
         </div>
-        <div class="col-md-3 col-sm-6 mb-3">
-            <a href="seguirUsuario" class="btn btn-outline-secondary w-100 shadow-sm py-3">
-                <i class="bi bi-person-plus me-2"></i> Seguir Usuario
-            </a>
-        </div>
-        <div class="col-md-3 col-sm-6 mb-3">
-            <a href="dejarSeguirUsuario" class="btn btn-outline-danger w-100 shadow-sm py-3">
-                <i class="bi bi-person-dash me-2"></i> Dejar de Seguir Usuario
-            </a>
-        </div>
     </div>
 </main>
 

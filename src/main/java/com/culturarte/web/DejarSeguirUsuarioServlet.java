@@ -19,8 +19,6 @@ import java.util.List;
 @WebServlet("/dejarSeguirUsuario")
 public class DejarSeguirUsuarioServlet extends HttpServlet {
 
-    private final IProponenteController propCtrl = Fabrica.getInstancia().getProponenteController();
-    private final IColaboradorController colCtrl = Fabrica.getInstancia().getColaboradorController();
     private final ISeguimientoController segCtrl = Fabrica.getInstancia().getSeguimientoController();
 
     @Override
@@ -53,10 +51,19 @@ public class DejarSeguirUsuarioServlet extends HttpServlet {
 
         String nickSeguidor = (String) sesion.getAttribute("nick");
         String nickSeguido = req.getParameter("usuarioSeguido");
+        //revisa q sea ajax
+        String esAjax = req.getParameter("ajax");
 
         if (nickSeguido == null || nickSeguido.isEmpty()) {
-            req.setAttribute("mensajeError", "Debe seleccionar un usuario a dejar de seguir.");
-            doGet(req, resp);
+            if ("true".equals(esAjax)) {
+                // Si es ajax, responde con error
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST); // 400 Bad Request
+                resp.getWriter().write("Usuario a seguir no puede ser nulo.");
+            } else {
+                // comportamiento normal (no ajax)
+                req.setAttribute("mensajeError", "Debe seleccionar un usuario a dejar de seguir.");
+                doGet(req, resp);
+            }
             return;
         }
 
@@ -70,8 +77,22 @@ public class DejarSeguirUsuarioServlet extends HttpServlet {
             }
         } catch (Exception e) {
             req.setAttribute("mensajeError", "Error al intentar dejar de seguir: " + e.getMessage());
+
+            if ("true".equals(esAjax)) {
+                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                resp.getWriter().write(e.getMessage());
+                return;
+            }
         }
 
-        req.getRequestDispatcher("/consultaPerfil").forward(req, resp);
+
+        if ("true".equals(esAjax)) {
+            resp.setStatus(HttpServletResponse.SC_OK);
+        } else {
+            // obtiene el tipo de usuario
+            String tipoUsr = req.getParameter("tipoUsr");
+            // eedirige de vuelta al perfil correcto
+            resp.sendRedirect("consultaPerfil?nick=" + nickSeguido + "&tipoUsr=" + tipoUsr);
+        }
     }
 }
