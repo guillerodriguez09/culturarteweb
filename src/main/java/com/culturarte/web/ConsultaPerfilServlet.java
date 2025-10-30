@@ -42,38 +42,44 @@ public class ConsultaPerfilServlet extends HttpServlet {
         req.setAttribute("proponentes", propController.listarTodos());
         req.setAttribute("colaboradores", colaController.listarTodos());
 
-        req.getRequestDispatcher("/consultaPerfil.jsp").forward(req, resp);
-    }
+        String tipoUsr = req.getParameter("tipoUsr");
+        String nick = req.getParameter("nick");
 
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        req.setCharacterEncoding("UTF-8");
-        resp.setContentType("text/html;charset=UTF-8");
+        if (nick == null || tipoUsr == null || nick.isEmpty() || tipoUsr.isEmpty()) {
+            req.getRequestDispatcher("/consultaPerfil.jsp").forward(req, resp);
+            return;
+        }
 
         // usuario en sesion
         HttpSession session = req.getSession(false);
         String nickSession = null;
         if (session != null) {
+            // Asumo que tu sesión guarda el nick, no el objeto Sesion
             nickSession = (String) session.getAttribute("nick");
         }
 
-        String tipoUsr = req.getParameter("tipoUsr");
-        String nick = req.getParameter("nick");
         List<String> seguidooresNick;
         List<String> seguidoosDeNick;
-
-        List<DTOProponente> listaProponentes = propController.listarTodos();
-        List<DTOColaborador> listaColaboradores = colaController.listarTodos();
-
-        req.setAttribute("proponentes", listaProponentes);
-        req.setAttribute("colaboradores", listaColaboradores);
 
         // ver si es perfil propio y pasarlo al jsp
         boolean esPropioPerfil = (nickSession != null && nickSession.equals(nick));
         req.setAttribute("esPropioPerfil", esPropioPerfil);
 
-        try{
+        //verificamos si el usuario logueado sigue al perfil q consulta
+        boolean loSigo = false;
+        if(nickSession != null && !esPropioPerfil){
+            try{
+                List<String> seguidosPorMi = seguiController.listarSeguidosDeNick(nickSession);
+                if (seguidosPorMi != null) {
+                    loSigo = seguidosPorMi.contains(nick);
+                }
+            } catch (Exception e){
+                System.err.println("Error al verificar seguimiento: " + e.getMessage());
+            }
+        }
+        req.setAttribute("loSigo", loSigo);
 
+        try{
             if("proponente".equals(tipoUsr)){
                 List<Object[]> propConPropu = propController.obtenerTodPropConPropu(nick);
                 DTOProponente dtoProponente = new DTOProponente();
@@ -98,8 +104,6 @@ public class ConsultaPerfilServlet extends HttpServlet {
                 req.setAttribute("seguidoosDeNick", seguidoosDeNick);
 
             }else if("colaborador".equals(tipoUsr)){
-
-                // lista simple para perfil ajeno
                 List<Object[]> colConPropu = colaController.obtenerTodColConPropu(nick);
                 DTOColaborador dtoColaborador = new DTOColaborador();
                 List<DTOPropuesta> dtoPropuestas = new ArrayList<>();
@@ -115,11 +119,9 @@ public class ConsultaPerfilServlet extends HttpServlet {
                     dtoColaborador = colaController.obtenerColaborador(nick);
                 }
                 req.setAttribute("colaboradorSeleccionado", dtoColaborador);
-                req.setAttribute("colaboracionesDeColaborador", dtoPropuestas); // Lista simple
+                req.setAttribute("colaboracionesDeColaborador", dtoPropuestas);
 
-                // PERFIL PROPIO DE COLABORADOR
                 if (esPropioPerfil) {
-                    // usamos ColaboracionController para obtener la lista detallada
                     List<DTOColabConsulta> detalles = colabController.consultarColaboracionesPorColaborador(nick);
                     req.setAttribute("colaboracionesDetalladas", detalles);
                 }
@@ -128,13 +130,18 @@ public class ConsultaPerfilServlet extends HttpServlet {
                 req.setAttribute("seguidooresNick", seguidooresNick);
                 seguidoosDeNick = seguiController.listarSeguidosDeNick(nick);
                 req.setAttribute("seguidoosDeNick", seguidoosDeNick);
-
             }
 
         }catch(Exception e){
             req.setAttribute("error", e.getMessage());
         }
 
+        // al final se hace el forward
         req.getRequestDispatcher("/consultaPerfil.jsp").forward(req, resp);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        doGet(req, resp);
     }
 }

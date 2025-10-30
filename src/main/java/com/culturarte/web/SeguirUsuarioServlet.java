@@ -41,7 +41,7 @@ public class SeguirUsuarioServlet extends HttpServlet {
         todosUsuarios.addAll(propCtrl.listarProponentes());
         todosUsuarios.addAll(colCtrl.listarColaboradores());
 
-        // Saca al propio usuario de la lista
+        // saca al propio usuario de la lista
         todosUsuarios.removeIf(u -> u.equalsIgnoreCase(nickActual));
 
         req.setAttribute("usuarios", todosUsuarios);
@@ -72,7 +72,7 @@ public class SeguirUsuarioServlet extends HttpServlet {
         IColaboradorController colCtrl = Fabrica.getInstancia().getColaboradorController();
         ISeguimientoController segCtrl = Fabrica.getInstancia().getSeguimientoController();
 
-        // Usuario del seguidor puede ser proponente o colaborador
+        // usuario del seguidor puede ser proponente o colaborador
         Usuario usuarioSeguidor = null;
 
         DTOProponente dtoP = propCtrl.obtenerProponente(nickSeguidor);
@@ -102,6 +102,9 @@ public class SeguirUsuarioServlet extends HttpServlet {
             req.setAttribute("mensajeError", "No se pudo identificar tu usuario actual.");
         }
 
-        doGet(req, resp);
+        String tipoUsr = req.getParameter("tipoUsr"); // Obtiene el tipo de usuario
+
+        // redirige de vuelta al perfil correcto
+        resp.sendRedirect("consultaPerfil?nick=" + nickSeguido + "&tipoUsr=" + tipoUsr);
     }
 }
