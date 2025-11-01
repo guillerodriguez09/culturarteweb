@@ -12,8 +12,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @WebServlet("/registrarColaboracion")
 public class RegistrarColaboracionServlet extends HttpServlet {
@@ -30,14 +29,34 @@ public class RegistrarColaboracionServlet extends HttpServlet {
             return;
         }
 
+        String titulo = req.getParameter("titulo");
+        if (titulo != null && !titulo.isEmpty()) {
+            session.setAttribute("propuestaSeleccionadaTitulo", titulo);
+        } else {
+            titulo = (String) session.getAttribute("propuestaSeleccionadaTitulo");
+        }
+
+        if (titulo == null || titulo.isEmpty()) {
+            req.setAttribute("error", "No se ha seleccionado ninguna propuesta. Vuelva a la pantalla de consulta para elegir una.");
+            req.getRequestDispatcher("/consultarPropuesta.jsp").forward(req, resp);
+            return;
+        }
+
         IPropuestaController propuestaCtrl = Fabrica.getInstancia().getPropuestaController();
-        List<DTOPropuesta> propuestas = propuestaCtrl.listarPropuestasConProponente();
-        req.setAttribute("propuestas", propuestas);
+
+        req.setAttribute("publicadas", Collections.emptyList());
+        req.setAttribute("enFinanciacion", Collections.emptyList());
+        req.setAttribute("financiadas", Collections.emptyList());
+        req.setAttribute("noFinanciadas", Collections.emptyList());
+        req.setAttribute("canceladas", Collections.emptyList());
+
+        DTOPropuesta propuesta = propuestaCtrl.consultarPropuesta(titulo);
+        req.setAttribute("propuestaSeleccionada", propuesta);
 
         List<ETipoRetorno> tiposRetorno = Arrays.asList(ETipoRetorno.values());
         req.setAttribute("tiposRetorno", tiposRetorno);
 
-        req.getRequestDispatcher("/registrarColaboracion.jsp").forward(req, resp);
+        req.getRequestDispatcher("/consultarPropuesta.jsp").forward(req, resp);
     }
 
     @Override
@@ -56,6 +75,16 @@ public class RegistrarColaboracionServlet extends HttpServlet {
 
         try {
             String propuestaTitulo = req.getParameter("propuestaTitulo");
+            if (propuestaTitulo == null || propuestaTitulo.isEmpty()) {
+                propuestaTitulo = (String) session.getAttribute("propuestaSeleccionadaTitulo");
+            }
+
+            if (propuestaTitulo == null || propuestaTitulo.isEmpty()) {
+                req.setAttribute("error", "No se ha seleccionado ninguna propuesta. Vuelva a la pantalla de consulta para elegir una.");
+                req.getRequestDispatcher("/consultarPropuesta.jsp").forward(req, resp);
+                return;
+            }
+
             String tipoRetornoStr = req.getParameter("tipoRetorno");
             String montoStr = req.getParameter("monto");
 
@@ -69,15 +98,15 @@ public class RegistrarColaboracionServlet extends HttpServlet {
             dto.setMonto(monto);
             dto.setFecha(LocalDateTime.now());
 
-            IColaboracionController colaboracionCtrl = Fabrica.getInstancia().getColaboracionController();
-            colaboracionCtrl.registrarColaboracion(dto);
+            Fabrica.getInstancia().getColaboracionController().registrarColaboracion(dto);
 
-            req.setAttribute("mensaje", "Colaboración registrada con éxito para la propuesta: " + propuestaTitulo);
+            session.removeAttribute("propuestaSeleccionadaTitulo");
+
+            resp.sendRedirect(req.getContextPath() + "/consultarPropuesta?titulo=" + propuestaTitulo + "&mensaje=Colaboracion registrada con exito");
 
         } catch (Exception e) {
             req.setAttribute("error", "Error al registrar colaboración: " + e.getMessage());
+            doGet(req, resp);
         }
-
-        doGet(req, resp);
     }
 }
