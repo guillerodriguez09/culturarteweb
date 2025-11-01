@@ -2,6 +2,11 @@
 <%@ page import="java.util.List" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.*, com.culturarte.logica.dtos.DTOPropuesta" %>
+<%
+    if (request.getParameter("mensaje") != null) {
+        request.setAttribute("mensaje", request.getParameter("mensaje"));
+    }
+%>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -245,9 +250,43 @@
                                     && ("PUBLICADA".equalsIgnoreCase(sel.getEstadoActual())
                                     || "EN_FINANCIACION".equalsIgnoreCase(sel.getEstadoActual()))) {
                             %>
-                            <a href="registrarColaboracion?titulo=<%= sel.getTitulo() %>" class="btn btn-success btn-lg">
+                            <button type="button" id="btnMostrarColaboracion" class="btn btn-success btn-lg">
                                 <i class="bi bi-heart-fill me-1"></i> ¡Quiero Colaborar!
-                            </a>
+                            </button>
+
+                            <div id="formColaboracion" style="display:none; margin-top:20px;">
+                                <form action="registrarColaboracion" method="post">
+                                    <input type="hidden" name="propuestaTitulo" value="<%= sel.getTitulo() %>">
+
+                                    <div class="mb-3">
+                                        <label for="monto" class="form-label">Monto a colaborar</label>
+                                        <input type="number" class="form-control" id="monto" name="monto" required min="1">
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="tipoRetorno" class="form-label">Tipo de retorno</label>
+                                        <select class="form-select" id="tipoRetorno" name="tipoRetorno" required>
+                                            <%
+                                            List<com.culturarte.logica.enums.ETipoRetorno> tipos =
+                                                    (List<com.culturarte.logica.enums.ETipoRetorno>) request.getAttribute("tiposRetorno");
+                                            if (tipos != null) {
+                                                for (com.culturarte.logica.enums.ETipoRetorno t : tipos) {
+                                            %>
+                                            <option value="<%= t.name() %>"><%= t.name() %></option>
+                                            <%
+                                                }
+                                            }
+                                            %>
+                                        </select>
+                                    </div>
+
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" class="btn btn-primary">Confirmar colaboración</button>
+                                        <button type="button" id="btnCancelarColab" class="btn btn-secondary">Cancelar</button>
+                                    </div>
+                                </form>
+                            </div>
+
                             <%
                                 }
                             }
@@ -269,4 +308,25 @@
 </div>
 
 <%@ include file="compartidos/footer.jsp" %>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const btnMostrar = document.getElementById("btnMostrarColaboracion");
+    const formDiv = document.getElementById("formColaboracion");
+    const btnCancelar = document.getElementById("btnCancelarColab");
+
+    if (btnMostrar) {
+        btnMostrar.addEventListener("click", () => {
+            formDiv.style.display = "block";
+            btnMostrar.style.display = "none";
+        });
+    }
+
+    if (btnCancelar) {
+        btnCancelar.addEventListener("click", () => {
+            formDiv.style.display = "none";
+            btnMostrar.style.display = "inline-block";
+        });
+    }
+});
+</script>
 </html>
