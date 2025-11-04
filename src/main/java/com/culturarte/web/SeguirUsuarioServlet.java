@@ -10,6 +10,7 @@ import com.culturarte.logica.controllers.IColaboradorController;
 import com.culturarte.logica.controllers.IProponenteController;
 import com.culturarte.logica.controllers.ISeguimientoController;
 import com.culturarte.logica.fabrica.Fabrica;
+import com.culturarte.web.fabrica.FabricaWeb;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -34,8 +35,8 @@ public class SeguirUsuarioServlet extends HttpServlet {
         Sesion usuarioSesion = (Sesion) sesion.getAttribute("sesion");
         String nickActual = usuarioSesion.getNickOMail();
 
-        IProponenteController propCtrl = Fabrica.getInstancia().getProponenteController();
-        IColaboradorController colCtrl = Fabrica.getInstancia().getColaboradorController();
+        IProponenteController propCtrl = FabricaWeb.getInstancia().getProponenteController();
+        IColaboradorController colCtrl = FabricaWeb.getInstancia().getColaboradorController();
 
         List<String> todosUsuarios = new ArrayList<>();
         todosUsuarios.addAll(propCtrl.listarProponentes());
@@ -68,9 +69,9 @@ public class SeguirUsuarioServlet extends HttpServlet {
             return;
         }
 
-        IProponenteController propCtrl = Fabrica.getInstancia().getProponenteController();
-        IColaboradorController colCtrl = Fabrica.getInstancia().getColaboradorController();
-        ISeguimientoController segCtrl = Fabrica.getInstancia().getSeguimientoController();
+        IProponenteController propCtrl = FabricaWeb.getInstancia().getProponenteController();
+        IColaboradorController colCtrl = FabricaWeb.getInstancia().getColaboradorController();
+        ISeguimientoController segCtrl = FabricaWeb.getInstancia().getSeguimientoController();
 
         // usuario del seguidor puede ser proponente o colaborador
         Usuario usuarioSeguidor = null;

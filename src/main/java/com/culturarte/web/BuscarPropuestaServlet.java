@@ -4,6 +4,8 @@ import com.culturarte.logica.clases.Propuesta;
 import com.culturarte.logica.controllers.IPropuestaController;
 import com.culturarte.logica.dtos.DTOPropuesta;
 import com.culturarte.logica.fabrica.Fabrica;
+import com.culturarte.web.fabrica.FabricaWeb;
+
 import javax.servlet.*;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
@@ -14,7 +16,7 @@ import java.util.stream.Collectors;
 @WebServlet("/buscarPropuesta")
 public class BuscarPropuestaServlet extends HttpServlet {
 
-    private final IPropuestaController propCtrl = Fabrica.getInstancia().getPropuestaController();
+    private final IPropuestaController propCtrl = FabricaWeb.getInstancia().getPropuestaController();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)

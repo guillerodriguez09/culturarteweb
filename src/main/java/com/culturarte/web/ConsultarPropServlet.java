@@ -11,6 +11,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import com.culturarte.logica.enums.ETipoRetorno;
+import java.util.Arrays;
 import java.util.List;
 
 @WebServlet("/consultarPropuesta")
@@ -40,7 +42,7 @@ public class ConsultarPropServlet extends HttpServlet {
         IPropuestaController propCtrl = Fabrica.getInstancia().getPropuestaController();
         String titulo = req.getParameter("titulo");
 
-      try{
+        try{
             DTOPropuesta dto = propCtrl.consultarPropuesta(titulo);
             req.setAttribute("propuestaSeleccionada", dto);
             req.setAttribute("colaboradores", dto.getColaboradores());
@@ -49,7 +51,8 @@ public class ConsultarPropServlet extends HttpServlet {
         } catch (Exception e) {
             req.setAttribute("error", e.getMessage());
         }
-
+        List<ETipoRetorno> tiposRetorno = Arrays.asList(ETipoRetorno.values());
+        req.setAttribute("tiposRetorno", tiposRetorno);
         doGet(req, resp); // recarga tod pero mantiene el detalle de la propuesta seleccionada
     }
 }

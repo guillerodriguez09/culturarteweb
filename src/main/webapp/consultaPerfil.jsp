@@ -24,8 +24,21 @@
     boolean esPropioPerfil = (request.getAttribute("esPropioPerfil") != null) ?
             (Boolean) request.getAttribute("esPropioPerfil") : false;
 
-    DTOProponente pro = (DTOProponente) request.getAttribute("proponenteSeleccionado");
-    DTOColaborador col = (DTOColaborador) request.getAttribute("colaboradorSeleccionado");
+    Object proObj = request.getAttribute("proponenteSeleccionado");
+    Object colObj = request.getAttribute("colaboradorSeleccionado");
+
+    // 2. Inicializamos las variables como null
+    DTOProponente pro = null;
+    DTOColaborador col = null;
+
+    // 3. Usamos 'instanceof' para verificar el tipo ANTES de hacer el cast
+    if (proObj instanceof DTOProponente) {
+        pro = (DTOProponente) proObj;
+    }
+
+    if (colObj instanceof DTOColaborador) {
+        col = (DTOColaborador) colObj;
+    }
 
     // Para saber quién está activo en la lista de la izquierda
     String nickSeleccionado = (pro != null) ? pro.getNick() : (col != null) ? col.getNick() : "";

@@ -5,6 +5,7 @@ import com.culturarte.logica.controllers.IColaboradorController;
 import com.culturarte.logica.dtos.DTOProponente;
 import com.culturarte.logica.dtos.DTOColaborador;
 import com.culturarte.logica.fabrica.Fabrica;
+import com.culturarte.web.fabrica.FabricaWeb;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -19,8 +20,8 @@ import java.time.LocalDate;
 @MultipartConfig
 public class AltaPerfilServlet extends HttpServlet {
 
-    final IProponenteController propController = Fabrica.getInstancia().getProponenteController();
-    final IColaboradorController colaController = Fabrica.getInstancia().getColaboradorController();
+    final IProponenteController propController = FabricaWeb.getInstancia().getProponenteController();
+    final IColaboradorController colaController = FabricaWeb.getInstancia().getColaboradorController();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

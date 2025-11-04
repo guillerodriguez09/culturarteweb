@@ -5,6 +5,7 @@ import com.culturarte.logica.controllers.IProponenteController;
 import com.culturarte.logica.controllers.IColaboradorController;
 import com.culturarte.logica.dtos.DTOProponente;
 import com.culturarte.logica.dtos.DTOColaborador;
+import com.culturarte.web.fabrica.FabricaWeb;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -18,8 +19,8 @@ import java.io.IOException;
 @WebServlet("/inicioSesion")
 public class InicioSesionServlet extends HttpServlet {
 
-    final IColaboradorController colaController = Fabrica.getInstancia().getColaboradorController();
-    final IProponenteController  propController = Fabrica.getInstancia().getProponenteController();
+    final IColaboradorController colaController = FabricaWeb.getInstancia().getColaboradorController();
+    final IProponenteController  propController = FabricaWeb.getInstancia().getProponenteController();
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)

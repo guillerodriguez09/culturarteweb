@@ -2,6 +2,7 @@ package com.culturarte.web;
 
 import com.culturarte.logica.controllers.IPropuestaController;
 import com.culturarte.logica.fabrica.Fabrica;
+import com.culturarte.web.fabrica.FabricaWeb;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -14,7 +15,7 @@ import java.io.IOException;
 @WebServlet("/cancelarPropuesta")
 public class CancelarPropServlet extends HttpServlet {
 
-    private final IPropuestaController propCtrl = Fabrica.getInstancia().getPropuestaController();
+    private final IPropuestaController propCtrl = FabricaWeb.getInstancia().getPropuestaController();
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

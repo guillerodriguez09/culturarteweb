@@ -8,6 +8,7 @@ import com.culturarte.logica.controllers.IColaboradorController;
 import com.culturarte.logica.controllers.IProponenteController;
 import com.culturarte.logica.controllers.ISeguimientoController;
 import com.culturarte.logica.fabrica.Fabrica;
+import com.culturarte.web.fabrica.FabricaWeb;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -19,7 +20,7 @@ import java.util.List;
 @WebServlet("/dejarSeguirUsuario")
 public class DejarSeguirUsuarioServlet extends HttpServlet {
 
-    private final ISeguimientoController segCtrl = Fabrica.getInstancia().getSeguimientoController();
+    private final ISeguimientoController segCtrl = FabricaWeb.getInstancia().getSeguimientoController();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)

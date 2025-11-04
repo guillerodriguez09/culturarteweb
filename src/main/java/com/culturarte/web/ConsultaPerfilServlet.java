@@ -13,6 +13,7 @@ import com.culturarte.logica.dtos.DTOPropuesta;
 import com.culturarte.logica.dtos.DTOColabConsulta;
 import javax.servlet.http.HttpSession;
 import com.culturarte.logica.fabrica.Fabrica;
+import com.culturarte.web.fabrica.FabricaWeb;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -29,10 +30,10 @@ import java.util.List;
 @MultipartConfig
 public class ConsultaPerfilServlet extends HttpServlet {
 
-    private final IProponenteController propController = Fabrica.getInstancia().getProponenteController();
-    private final IColaboradorController colaController = Fabrica.getInstancia().getColaboradorController();
-    private final ISeguimientoController seguiController = Fabrica.getInstancia().getSeguimientoController();
-    private final IColaboracionController colabController = Fabrica.getInstancia().getColaboracionController();
+    private final IProponenteController propController = FabricaWeb.getInstancia().getProponenteController();
+    private final IColaboradorController colaController = FabricaWeb.getInstancia().getColaboradorController();
+    private final ISeguimientoController seguiController = FabricaWeb.getInstancia().getSeguimientoController();
+    private final IColaboracionController colabController = FabricaWeb.getInstancia().getColaboracionController();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

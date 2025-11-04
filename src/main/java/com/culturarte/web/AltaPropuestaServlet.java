@@ -6,6 +6,7 @@ import com.culturarte.logica.controllers.IProponenteController;
 import com.culturarte.logica.dtos.DTOPropuesta;
 import com.culturarte.logica.enums.ETipoRetorno;
 import com.culturarte.logica.fabrica.Fabrica;
+import com.culturarte.web.fabrica.FabricaWeb;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -124,7 +125,7 @@ public class AltaPropuestaServlet extends HttpServlet {
             dto.setImagen(relativePath);
 
 
-            IPropuestaController ctrl = Fabrica.getInstancia().getPropuestaController();
+            IPropuestaController ctrl = FabricaWeb.getInstancia().getPropuestaController();
             ctrl.altaPropuesta(dto);
             session.setAttribute("mensaje", "Propuesta creada con éxito: " + titulo);
 
@@ -138,7 +139,7 @@ public class AltaPropuestaServlet extends HttpServlet {
     }
 
     private void cargarCategorias(HttpServletRequest req) {
-        ICategoriaController catCtrl = Fabrica.getInstancia().getCategoriaController();
+        ICategoriaController catCtrl = FabricaWeb.getInstancia().getCategoriaController();
         List<String> categorias = catCtrl.listarCategorias()
                 .stream()
                 .filter(c -> !c.equalsIgnoreCase("Categoría"))
