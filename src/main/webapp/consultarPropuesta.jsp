@@ -1,7 +1,9 @@
-<%@ page import="com.culturarte.logica.dtos.DTOPropuesta" %>
-<%@ page import="java.util.List" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="java.util.*, com.culturarte.logica.dtos.DTOPropuesta" %>
+<%@ page import="java.util.*" %>
+<%@ page import="com.culturarte.web.ws.cliente.DtoPropuesta" %>
+<%@ page import="com.culturarte.web.ws.cliente.DtoUsuario" %>
+<%@ page import="com.culturarte.web.ws.cliente.ETipoRetorno" %>
+
 <%
     if (request.getParameter("mensaje") != null) {
         request.setAttribute("mensaje", request.getParameter("mensaje"));
@@ -22,7 +24,7 @@
 <%
     // esto es para que se quede en la pestana que seleccionamos
 
-    DTOPropuesta sel = (DTOPropuesta) request.getAttribute("propuestaSeleccionada");
+    DtoPropuesta sel = (DtoPropuesta) request.getAttribute("propuestaSeleccionada");
 
     String activeTabId = "publicadas"; //  por defecto esta en publicadas
 
@@ -90,21 +92,21 @@
 
     <div class="tab-content mt-3">
         <%
-            Map<String, List<DTOPropuesta>> grupos = Map.of(
-                    "publicadas", (List<DTOPropuesta>) request.getAttribute("publicadas"),
-                    "financiacion", (List<DTOPropuesta>) request.getAttribute("enFinanciacion"),
-                    "financiadas", (List<DTOPropuesta>) request.getAttribute("financiadas"),
-                    "noFinanciadas", (List<DTOPropuesta>) request.getAttribute("noFinanciadas"),
-                    "canceladas", (List<DTOPropuesta>) request.getAttribute("canceladas")
+            Map<String, List<DtoPropuesta>> grupos = Map.of(
+                    "publicadas", (List<DtoPropuesta>) request.getAttribute("publicadas"),
+                    "financiacion", (List<DtoPropuesta>) request.getAttribute("enFinanciacion"),
+                    "financiadas", (List<DtoPropuesta>) request.getAttribute("financiadas"),
+                    "noFinanciadas", (List<DtoPropuesta>) request.getAttribute("noFinanciadas"),
+                    "canceladas", (List<DtoPropuesta>) request.getAttribute("canceladas")
             );
             for (String key : grupos.keySet()) {
         %>
         <div class="tab-pane fade <%= key.equals(activeTabId) ? "show active" : "" %>" id="<%= key %>">
             <div class="list-group">
                 <%
-                    List<DTOPropuesta> lista = grupos.get(key);
+                    List<DtoPropuesta> lista = grupos.get(key);
                     if (lista != null && !lista.isEmpty()) {
-                        for (DTOPropuesta p : lista) {
+                        for (DtoPropuesta p : lista) {
                 %>
                 <form action="consultarPropuesta" method="post"
                       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
@@ -267,10 +269,10 @@
                                     <label for="tipoRetorno" class="form-label">Tipo de retorno</label>
                                     <select class="form-select" id="tipoRetorno" name="tipoRetorno" required>
                                         <%
-                                            List<com.culturarte.logica.enums.ETipoRetorno> tipos =
-                                                    (List<com.culturarte.logica.enums.ETipoRetorno>) request.getAttribute("tiposRetorno");
+                                            List<ETipoRetorno> tipos = (List<ETipoRetorno>) request.getAttribute("tiposRetorno");
+
                                             if (tipos != null) {
-                                                for (com.culturarte.logica.enums.ETipoRetorno t : tipos) {
+                                                for (ETipoRetorno t : tipos) {
                                         %>
                                         <option value="<%= t.name() %>"><%= t.name() %></option>
                                         <%
@@ -279,6 +281,7 @@
                                         %>
                                     </select>
                                 </div>
+
 
                                 <div class="d-flex gap-2">
                                     <button type="submit" class="btn btn-primary">Confirmar colaboración</button>

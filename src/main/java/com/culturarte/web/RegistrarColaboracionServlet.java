@@ -1,12 +1,8 @@
 package com.culturarte.web;
 
-import com.culturarte.logica.controllers.IColaboracionController;
-import com.culturarte.logica.controllers.IPropuestaController;
-import com.culturarte.logica.dtos.DTOColaboracion;
-import com.culturarte.logica.dtos.DTOPropuesta;
-import com.culturarte.logica.enums.ETipoRetorno;
-import com.culturarte.logica.fabrica.Fabrica;
+import com.culturarte.web.ws.cliente.*;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
@@ -16,6 +12,20 @@ import java.util.*;
 
 @WebServlet("/registrarColaboracion")
 public class RegistrarColaboracionServlet extends HttpServlet {
+
+    private IPropuestaController propuestaCtrl;
+    private IColaboracionController colaboracionCtrl;
+
+    @Override
+    public void init() throws ServletException {
+        ServletContext context = getServletContext();
+        this.propuestaCtrl = (IPropuestaController) context.getAttribute("ws.propuesta");
+        this.colaboracionCtrl = (IColaboracionController) context.getAttribute("ws.colaboracion");
+
+        if (this.propuestaCtrl == null || this.colaboracionCtrl == null) {
+            throw new ServletException("¡Error crítico! Los clientes de RegistrarColaboracionServlet no se pudieron cargar desde ClienteInit.");
+        }
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -42,7 +52,6 @@ public class RegistrarColaboracionServlet extends HttpServlet {
             return;
         }
 
-        IPropuestaController propuestaCtrl = Fabrica.getInstancia().getPropuestaController();
 
         req.setAttribute("publicadas", Collections.emptyList());
         req.setAttribute("enFinanciacion", Collections.emptyList());
@@ -50,11 +59,16 @@ public class RegistrarColaboracionServlet extends HttpServlet {
         req.setAttribute("noFinanciadas", Collections.emptyList());
         req.setAttribute("canceladas", Collections.emptyList());
 
-        DTOPropuesta propuesta = propuestaCtrl.consultarPropuesta(titulo);
-        req.setAttribute("propuestaSeleccionada", propuesta);
+        try {
+            DtoPropuesta propuesta = this.propuestaCtrl.consultarPropuesta(titulo);
+            req.setAttribute("propuestaSeleccionada", propuesta);
 
-        List<ETipoRetorno> tiposRetorno = Arrays.asList(ETipoRetorno.values());
-        req.setAttribute("tiposRetorno", tiposRetorno);
+            List<ETipoRetorno> tiposRetorno = Arrays.asList(ETipoRetorno.values());
+            req.setAttribute("tiposRetorno", tiposRetorno);
+
+        } catch (Exception e) {
+            req.setAttribute("error", "Error al cargar propuesta: " + e.getMessage());
+        }
 
         req.getRequestDispatcher("/consultarPropuesta.jsp").forward(req, resp);
     }
@@ -80,7 +94,7 @@ public class RegistrarColaboracionServlet extends HttpServlet {
             }
 
             if (propuestaTitulo == null || propuestaTitulo.isEmpty()) {
-                req.setAttribute("error", "No se ha seleccionado ninguna propuesta. Vuelva a la pantalla de consulta para elegir una.");
+                req.setAttribute("error", "No se ha seleccionado ninguna propuesta.");
                 req.getRequestDispatcher("/consultarPropuesta.jsp").forward(req, resp);
                 return;
             }
@@ -88,25 +102,30 @@ public class RegistrarColaboracionServlet extends HttpServlet {
             String tipoRetornoStr = req.getParameter("tipoRetorno");
             String montoStr = req.getParameter("monto");
 
-            ETipoRetorno tipoRetorno = ETipoRetorno.valueOf(tipoRetornoStr);
+
+            ETipoRetorno tipoRetorno = ETipoRetorno.fromValue(tipoRetornoStr);
             Integer monto = Integer.parseInt(montoStr);
 
-            DTOColaboracion dto = new DTOColaboracion();
+
+            String fechaStr = LocalDateTime.now().toString();
+
+
+            DtoColaboracion dto = new DtoColaboracion();
             dto.setColaboradorNick(colaboradorNick);
             dto.setPropuestaTitulo(propuestaTitulo);
             dto.setRetorno(tipoRetorno);
             dto.setMonto(monto);
-            dto.setFecha(LocalDateTime.now());
+            dto.setFecha(fechaStr);
 
-            Fabrica.getInstancia().getColaboracionController().registrarColaboracion(dto);
+
+            this.colaboracionCtrl.registrarColaboracion(dto); // <- SE USA
 
             session.removeAttribute("propuestaSeleccionadaTitulo");
-
             resp.sendRedirect(req.getContextPath() + "/consultarPropuesta?titulo=" + propuestaTitulo + "&mensaje=Colaboracion registrada con exito");
 
         } catch (Exception e) {
             req.setAttribute("error", "Error al registrar colaboración: " + e.getMessage());
-            doGet(req, resp);
+            doGet(req, resp); // Recarga la página con el error
         }
     }
 }

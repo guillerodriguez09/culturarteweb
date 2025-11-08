@@ -1,5 +1,5 @@
 package com.culturarte.web;
-
+import com.culturarte.web.ws.cliente.*;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;

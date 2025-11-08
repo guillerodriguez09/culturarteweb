@@ -1,17 +1,6 @@
 package com.culturarte.web;
 
-import com.culturarte.logica.dtos.DTOSeguimiento;
-import com.culturarte.logica.dtos.DTOColaborador;
-import com.culturarte.logica.dtos.DTOProponente;
-import com.culturarte.logica.clases.Usuario;
-import com.culturarte.logica.clases.Proponente;
-import com.culturarte.logica.clases.Colaborador;
-import com.culturarte.logica.controllers.IColaboradorController;
-import com.culturarte.logica.controllers.IProponenteController;
-import com.culturarte.logica.controllers.ISeguimientoController;
-import com.culturarte.logica.fabrica.Fabrica;
-import com.culturarte.web.fabrica.FabricaWeb;
-
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
@@ -19,8 +8,27 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.culturarte.web.ws.cliente.*;
+
 @WebServlet("/seguirUsuario")
 public class SeguirUsuarioServlet extends HttpServlet {
+
+    private IProponenteController propCtrl;
+    private IColaboradorController colCtrl;
+    private ISeguimientoController segCtrl;
+
+    @Override
+    public void init() throws ServletException {
+        ServletContext context = getServletContext();
+
+        this.propCtrl = (IProponenteController) context.getAttribute("ws.proponente");
+        this.colCtrl = (IColaboradorController) context.getAttribute("ws.colaborador");
+        this.segCtrl = (ISeguimientoController) context.getAttribute("ws.seguimiento");
+
+        if (this.propCtrl == null || this.colCtrl == null || this.segCtrl == null) {
+            throw new ServletException("¡Error crítico! Los clientes de SeguirUsuarioServlet no se pudieron cargar desde ClienteInit.");
+        }
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -35,17 +43,17 @@ public class SeguirUsuarioServlet extends HttpServlet {
         Sesion usuarioSesion = (Sesion) sesion.getAttribute("sesion");
         String nickActual = usuarioSesion.getNickOMail();
 
-        IProponenteController propCtrl = FabricaWeb.getInstancia().getProponenteController();
-        IColaboradorController colCtrl = FabricaWeb.getInstancia().getColaboradorController();
+        try {
+            List<String> todosUsuarios = new ArrayList<>();
+            todosUsuarios.addAll(this.propCtrl.listarProponentes());
+            todosUsuarios.addAll(this.colCtrl.listarColaboradores());
+            todosUsuarios.removeIf(u -> u.equalsIgnoreCase(nickActual));
+            req.setAttribute("usuarios", todosUsuarios);
+        } catch (Exception e) {
+            req.setAttribute("usuarios", new ArrayList<String>()); // Lista vacía en caso de error
+            req.setAttribute("mensajeError", "Error al cargar usuarios: " + e.getMessage());
+        }
 
-        List<String> todosUsuarios = new ArrayList<>();
-        todosUsuarios.addAll(propCtrl.listarProponentes());
-        todosUsuarios.addAll(colCtrl.listarColaboradores());
-
-        // saca al propio usuario de la lista
-        todosUsuarios.removeIf(u -> u.equalsIgnoreCase(nickActual));
-
-        req.setAttribute("usuarios", todosUsuarios);
         req.getRequestDispatcher("/seguirUsuario.jsp").forward(req, resp);
     }
 
@@ -61,51 +69,36 @@ public class SeguirUsuarioServlet extends HttpServlet {
 
         Sesion usuarioSesion = (Sesion) sesion.getAttribute("sesion");
         String nickSeguidor = usuarioSesion.getNickOMail();
+        String tipoSeguidor = usuarioSesion.getTipoUsuario(); // Proponente o Colaborador
         String nickSeguido = req.getParameter("usuarioSeguido");
 
         if (nickSeguido == null || nickSeguido.isEmpty()) {
             req.setAttribute("mensajeError", "Debe seleccionar un usuario a seguir.");
-            doGet(req, resp);
+            doGet(req, resp); // recarga la página
             return;
         }
 
-        IProponenteController propCtrl = FabricaWeb.getInstancia().getProponenteController();
-        IColaboradorController colCtrl = FabricaWeb.getInstancia().getColaboradorController();
-        ISeguimientoController segCtrl = FabricaWeb.getInstancia().getSeguimientoController();
+        try {
+            // Armamos el stub del seguidor (DtoUsuario)
+            DtoUsuario dtoSeguidor = new DtoUsuario();
+            dtoSeguidor.setNickname(nickSeguidor);
 
-        // usuario del seguidor puede ser proponente o colaborador
-        Usuario usuarioSeguidor = null;
+            // Armamos el seguimiento completo
+            DtoSeguimiento dtoSeg = new DtoSeguimiento();
+            dtoSeg.setUsuarioSeguidor(dtoSeguidor);
+            dtoSeg.setUsuarioSeguido(nickSeguido);
 
-        DTOProponente dtoP = propCtrl.obtenerProponente(nickSeguidor);
-        if (dtoP != null) {
-            usuarioSeguidor = new Proponente(
-                    dtoP.getNick(), dtoP.getNombre(), dtoP.getApellido(),
-                    dtoP.getContrasenia(), dtoP.getCorreo(),
-                    dtoP.getFechaNac(), dtoP.getDirImagen(),
-                    dtoP.getDireccion(), dtoP.getBiografia(), dtoP.getLink()
-            );
-        } else {
-            DTOColaborador dtoC = colCtrl.obtenerColaborador(nickSeguidor);
-            if (dtoC != null) {
-                usuarioSeguidor = new Colaborador(
-                        dtoC.getNick(), dtoC.getNombre(), dtoC.getApellido(),
-                        dtoC.getContrasenia(), dtoC.getCorreo(),
-                        dtoC.getFechaNac(), dtoC.getDirImagen()
-                );
-            }
-        }
-
-        if (usuarioSeguidor != null) {
-            DTOSeguimiento dtoSeg = new DTOSeguimiento(usuarioSeguidor, nickSeguido);
+            // Llamamos al WS remoto
             segCtrl.registrarSeguimiento(dtoSeg);
-            req.setAttribute("mensajeExito", "Ahora sigues a " + nickSeguido + ".");
-        } else {
-            req.setAttribute("mensajeError", "No se pudo identificar tu usuario actual.");
+
+        } catch (Exception e) {
+            System.err.println("Error al registrar seguimiento: " + e.getMessage());
+            req.setAttribute("mensajeError", "Error: " + e.getMessage());
         }
 
-        String tipoUsr = req.getParameter("tipoUsr"); // Obtiene el tipo de usuario
-
-        // redirige de vuelta al perfil correcto
+        // Redirigimos al perfil del seguido
+        String tipoUsr = req.getParameter("tipoUsr");
         resp.sendRedirect("consultaPerfil?nick=" + nickSeguido + "&tipoUsr=" + tipoUsr);
     }
+
 }

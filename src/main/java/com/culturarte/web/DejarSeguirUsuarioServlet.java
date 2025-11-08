@@ -1,26 +1,28 @@
 package com.culturarte.web;
 
-import com.culturarte.logica.dtos.DTOSeguimiento;
-import com.culturarte.logica.dtos.DTOColaborador;
-import com.culturarte.logica.dtos.DTOProponente;
-import com.culturarte.logica.clases.Usuario;
-import com.culturarte.logica.controllers.IColaboradorController;
-import com.culturarte.logica.controllers.IProponenteController;
-import com.culturarte.logica.controllers.ISeguimientoController;
-import com.culturarte.logica.fabrica.Fabrica;
-import com.culturarte.web.fabrica.FabricaWeb;
+import com.culturarte.web.ws.cliente.ISeguimientoController;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 @WebServlet("/dejarSeguirUsuario")
 public class DejarSeguirUsuarioServlet extends HttpServlet {
 
-    private final ISeguimientoController segCtrl = FabricaWeb.getInstancia().getSeguimientoController();
+    private ISeguimientoController segCtrl;
+
+    @Override
+    public void init() throws ServletException {
+        ServletContext context = getServletContext();
+        this.segCtrl = (ISeguimientoController) context.getAttribute("ws.seguimiento");
+
+        if (this.segCtrl == null) {
+            throw new ServletException("¡Error crítico! El cliente de Seguimiento (ws.seguimiento) no se pudo cargar desde ClienteInit.");
+        }
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -34,9 +36,13 @@ public class DejarSeguirUsuarioServlet extends HttpServlet {
 
         String nickActual = (String) sesion.getAttribute("nick");
 
-        List<String> usuariosSeguidos = segCtrl.listarSeguidosDeNick(nickActual);
+        try {
+            List<String> usuariosSeguidos = segCtrl.listarSeguidosDeNick(nickActual);
+            req.setAttribute("usuariosSeguidos", usuariosSeguidos);
+        } catch (Exception e) {
+            req.setAttribute("error", "Error al cargar seguidos: " + e.getMessage());
+        }
 
-        req.setAttribute("usuariosSeguidos", usuariosSeguidos);
         req.getRequestDispatcher("/dejarSeguirUsuario.jsp").forward(req, resp);
     }
 
@@ -52,16 +58,13 @@ public class DejarSeguirUsuarioServlet extends HttpServlet {
 
         String nickSeguidor = (String) sesion.getAttribute("nick");
         String nickSeguido = req.getParameter("usuarioSeguido");
-        //revisa q sea ajax
         String esAjax = req.getParameter("ajax");
 
         if (nickSeguido == null || nickSeguido.isEmpty()) {
             if ("true".equals(esAjax)) {
-                // Si es ajax, responde con error
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST); // 400 Bad Request
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 resp.getWriter().write("Usuario a seguir no puede ser nulo.");
             } else {
-                // comportamiento normal (no ajax)
                 req.setAttribute("mensajeError", "Debe seleccionar un usuario a dejar de seguir.");
                 doGet(req, resp);
             }
@@ -86,13 +89,10 @@ public class DejarSeguirUsuarioServlet extends HttpServlet {
             }
         }
 
-
         if ("true".equals(esAjax)) {
             resp.setStatus(HttpServletResponse.SC_OK);
         } else {
-            // obtiene el tipo de usuario
             String tipoUsr = req.getParameter("tipoUsr");
-            // eedirige de vuelta al perfil correcto
             resp.sendRedirect("consultaPerfil?nick=" + nickSeguido + "&tipoUsr=" + tipoUsr);
         }
     }

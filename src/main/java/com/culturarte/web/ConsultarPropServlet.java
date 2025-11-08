@@ -1,17 +1,16 @@
 package com.culturarte.web;
 
-import com.culturarte.logica.controllers.IPropuestaController;
-import com.culturarte.logica.dtos.DTOPropuesta;
-import com.culturarte.logica.enums.EEstadoPropuesta;
-import com.culturarte.logica.fabrica.Fabrica;
 
+
+import com.culturarte.web.ws.cliente.*;
+
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import com.culturarte.logica.enums.ETipoRetorno;
 import java.util.Arrays;
 import java.util.List;
 
@@ -19,11 +18,22 @@ import java.util.List;
 public class ConsultarPropServlet extends HttpServlet {
 
 
+    private IPropuestaController propCtrl;
+
+
+    @Override
+    public void init() throws ServletException {
+        ServletContext context = getServletContext();
+        this.propCtrl = (IPropuestaController) context.getAttribute("ws.propuesta");
+
+        if (this.propCtrl == null) {
+            throw new ServletException("¡Error crítico! El cliente de Propuesta (ws.propuesta) no se pudo cargar desde ClienteInit.");
+        }
+    }
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         req.setCharacterEncoding("UTF-8");
         resp.setContentType("text/html;charset=UTF-8");
-        IPropuestaController propCtrl = Fabrica.getInstancia().getPropuestaController();
 
         // Cargar las propuestas por estado
         req.setAttribute("publicadas", propCtrl.listarPorEstado(EEstadoPropuesta.PUBLICADA));
@@ -39,11 +49,10 @@ public class ConsultarPropServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         req.setCharacterEncoding("UTF-8");
         resp.setContentType("text/html;charset=UTF-8");
-        IPropuestaController propCtrl = Fabrica.getInstancia().getPropuestaController();
         String titulo = req.getParameter("titulo");
 
         try{
-            DTOPropuesta dto = propCtrl.consultarPropuesta(titulo);
+            DtoPropuesta dto = propCtrl.consultarPropuesta(titulo);
             req.setAttribute("propuestaSeleccionada", dto);
             req.setAttribute("colaboradores", dto.getColaboradores());
             req.setAttribute("montoRecaudado", dto.getMontoRecaudado());

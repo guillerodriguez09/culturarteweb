@@ -1,13 +1,9 @@
 package com.culturarte.web;
 
-import com.culturarte.logica.controllers.ICategoriaController;
-import com.culturarte.logica.controllers.IPropuestaController;
-import com.culturarte.logica.controllers.IProponenteController;
-import com.culturarte.logica.dtos.DTOPropuesta;
-import com.culturarte.logica.enums.ETipoRetorno;
-import com.culturarte.logica.fabrica.Fabrica;
-import com.culturarte.web.fabrica.FabricaWeb;
+import com.culturarte.web.ws.cliente.*;
+import java.util.stream.Collectors; // Para el filtro de categorías
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
@@ -23,6 +19,22 @@ import java.util.List;
 @MultipartConfig
 public class AltaPropuestaServlet extends HttpServlet {
 
+
+    private IPropuestaController propCtrl;
+    private ICategoriaController catCtrl;
+
+
+    @Override
+    public void init() throws ServletException {
+        ServletContext context = getServletContext();
+        this.propCtrl = (IPropuestaController) context.getAttribute("ws.propuesta");
+        this.catCtrl = (ICategoriaController) context.getAttribute("ws.categoria");
+
+        if (this.propCtrl == null || this.catCtrl == null) {
+            throw new ServletException("¡Error crítico! Los clientes de AltaPropuestaServlet no se pudieron cargar desde ClienteInit.");
+        }
+    }
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
@@ -34,7 +46,6 @@ public class AltaPropuestaServlet extends HttpServlet {
         String tipoUsuario = (session != null) ? (String) session.getAttribute("tipoUsuario") : null;
 
         if (tipoUsuario == null || !tipoUsuario.equalsIgnoreCase("Proponente")) {
-            //redirige al login en vez de 403
             resp.sendRedirect(req.getContextPath() + "/inicioSesion.jsp?loginRequired=1");
             return;
         }
@@ -53,99 +64,89 @@ public class AltaPropuestaServlet extends HttpServlet {
         String proponenteNick= (session != null) ? (String) session.getAttribute("nick") : null;
 
         if (tipoUsuario == null || !tipoUsuario.equalsIgnoreCase("Proponente") || proponenteNick == null) {
-            // redirige al login en vez de 403
             resp.sendRedirect(req.getContextPath() + "/inicioSesion.jsp?loginRequired=1");
             return;
         }
 
         try {
-            //Recibir datos del form
             String titulo = req.getParameter("titulo");
             String descripcion = req.getParameter("descripcion");
             String lugar = req.getParameter("lugar");
-            String fechaStr = req.getParameter("fecha");
-
+            String fecha = req.getParameter("fecha");
             String categoria = req.getParameter("categoriaNombre");
             if (categoria == null || categoria.isBlank()) {
-                categoria = "Categoría"; // raíz por defecto
+                categoria = "Categoría";
             }
-
             int precioEntrada = Integer.parseInt(req.getParameter("precioEntrada"));
             int montoAReunir = Integer.parseInt(req.getParameter("montoAReunir"));
+
 
 
             String[] retornosSeleccionados = req.getParameterValues("retornos");
             List<ETipoRetorno> retornos = new ArrayList<>();
             if (retornosSeleccionados != null) {
                 for (String r : retornosSeleccionados) {
-                    retornos.add(ETipoRetorno.valueOf(r));
+                    // ETipoRetorno ahora viene de 'com.culturarte.web.ws.cliente'
+                    retornos.add(ETipoRetorno.fromValue(r)); // JAX-WS usa fromValue()
                 }
             }
 
-            // Manejo de la imagen subida
+
             Part filePart = req.getPart("imagen");
-            String fileName = null;
             String relativePath = null;
-
             if (filePart != null && filePart.getSize() > 0) {
-                // Nombre limpio del archivo subido
-                fileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
-
-                // Ruta absoluta a la carpeta imagenes dentro del WAR desplegado
+                String fileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
                 String uploadPath = getServletContext().getRealPath("/imagenes");
-
-                // Crear la carpeta si no existe
                 File uploadDir = new File(uploadPath);
-                if (!uploadDir.exists()) {
-                    uploadDir.mkdirs();
-                }
-
-                // Guardar el archivo
+                if (!uploadDir.exists()) uploadDir.mkdirs();
                 filePart.write(uploadPath + File.separator + fileName);
-
-                // Guardar ruta relativa para la BD
                 relativePath = "imagenes/" + fileName;
             } else {
-                // Si no se sube imagen, usar una genérica
                 relativePath = "imagenes/404.png";
             }
 
 
-            // Armar DTO
-            DTOPropuesta dto = new DTOPropuesta();
+            DtoPropuesta dto = new DtoPropuesta();
             dto.setTitulo(titulo);
             dto.setDescripcion(descripcion);
             dto.setLugar(lugar);
-            dto.setFecha(LocalDate.parse(fechaStr));
+            dto.setFecha(fecha);
             dto.setCategoriaNombre(categoria);
             dto.setProponenteNick(proponenteNick);
             dto.setPrecioEntrada(precioEntrada);
             dto.setMontoAReunir(montoAReunir);
-            dto.setRetornos(retornos);
+
+
+            dto.getRetornos().addAll(retornos);
+
             dto.setImagen(relativePath);
 
 
-            IPropuestaController ctrl = FabricaWeb.getInstancia().getPropuestaController();
-            ctrl.altaPropuesta(dto);
-            session.setAttribute("mensaje", "Propuesta creada con éxito: " + titulo);
+            this.propCtrl.altaPropuesta(dto);
 
+            session.setAttribute("mensaje", "Propuesta creada con éxito: " + titulo);
             resp.sendRedirect(req.getContextPath() + "/index.jsp");
-        }
-        catch (Exception e) {
+
+        } catch (Exception e) {
             req.setAttribute("error", "Error al crear la propuesta: " + e.getMessage());
             cargarCategorias(req);
             req.getRequestDispatcher("/altaPropuesta.jsp").forward(req, resp);
         }
     }
 
-    private void cargarCategorias(HttpServletRequest req) {
-        ICategoriaController catCtrl = FabricaWeb.getInstancia().getCategoriaController();
-        List<String> categorias = catCtrl.listarCategorias()
-                .stream()
-                .filter(c -> !c.equalsIgnoreCase("Categoría"))
-                .toList();
 
-        req.setAttribute("categorias", categorias);
+    private void cargarCategorias(HttpServletRequest req) {
+        try {
+            List<String> categorias = this.catCtrl.listarCategorias()
+                    .stream()
+                    .filter(c -> !c.equalsIgnoreCase("Categoría"))
+                    .collect(Collectors.toList()); // Usamos collect para compatibilidad
+
+            req.setAttribute("categorias", categorias);
+        } catch (Exception e) {
+            System.err.println("Error al cargar categorías desde el WS: " + e.getMessage());
+            req.setAttribute("error", "No se pudieron cargar las categorías.");
+            req.setAttribute("categorias", new ArrayList<String>());
+        }
     }
 }
-
