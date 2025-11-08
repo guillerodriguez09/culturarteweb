@@ -1,25 +1,35 @@
 package com.culturarte.web;
 
-import com.culturarte.logica.fabrica.Fabrica;
-import com.culturarte.logica.controllers.IProponenteController;
-import com.culturarte.logica.controllers.IColaboradorController;
-import com.culturarte.logica.dtos.DTOProponente;
-import com.culturarte.logica.dtos.DTOColaborador;
+import com.culturarte.web.ws.cliente.DtoColaborador;
+import com.culturarte.web.ws.cliente.DtoProponente;
+import com.culturarte.web.ws.cliente.IColaboradorController;
+import com.culturarte.web.ws.cliente.IProponenteController;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.*;
 import java.io.IOException;
 
 @WebServlet("/inicioSesion")
 public class InicioSesionServlet extends HttpServlet {
 
-    final IColaboradorController colaController = Fabrica.getInstancia().getColaboradorController();
-    final IProponenteController  propController = Fabrica.getInstancia().getProponenteController();
+
+    private IProponenteController propController;
+    private IColaboradorController colaController;
+
+    @Override
+    public void init() throws ServletException {
+        ServletContext context = getServletContext();
+
+        // ¡Buscamos los clientes que creó el ClienteInit!
+        this.propController = (IProponenteController) context.getAttribute("ws.proponente");
+        this.colaController = (IColaboradorController) context.getAttribute("ws.colaborador");
+
+        if (this.propController == null || this.colaController == null) {
+            throw new ServletException("¡Error crítico! Los clientes de InicioSesionServlet no se pudieron cargar desde ClienteInit.");
+        }
+    }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
@@ -44,27 +54,28 @@ public class InicioSesionServlet extends HttpServlet {
 
             // Buscar por nick o correo
             if (!nickOMail.contains("@")) {
-                DTOProponente p = propController.obtenerProponente(nickOMail);
+
+                DtoProponente p = propController.obtenerProponente(nickOMail);
                 if (p != null) {
                     tipoUsuario = "PROPONENTE";
                     contrReal = p.getContrasenia();
-                    nickReal = p.getNick();
+                    nickReal = p.getNickname();
                 }
 
                 if (tipoUsuario == null) {
-                    DTOColaborador c = colaController.obtenerColaborador(nickOMail);
+                    DtoColaborador c = colaController.obtenerColaborador(nickOMail);
                     if (c != null) {
                         tipoUsuario = "COLABORADOR";
                         contrReal = c.getContrasenia();
-                        nickReal = c.getNick();
+                        nickReal = c.getNickname();
                     }
                 }
             } else {
-                DTOProponente p = propController.obtenerProponenteCorreo(nickOMail);
-                if (p != null) { tipoUsuario = "PROPONENTE"; contrReal = p.getContrasenia(); nickReal = p.getNick(); }
+                DtoProponente p = propController.obtenerProponenteCorreo(nickOMail);
+                if (p != null) { tipoUsuario = "PROPONENTE"; contrReal = p.getContrasenia(); nickReal = p.getNickname(); }
                 if (tipoUsuario == null) {
-                    DTOColaborador c = colaController.obtenerColaboradorCorreo(nickOMail);
-                    if (c != null) { tipoUsuario = "COLABORADOR"; contrReal = c.getContrasenia(); nickReal = c.getNick(); }
+                    DtoColaborador c = colaController.obtenerColaboradorCorreo(nickOMail);
+                    if (c != null) { tipoUsuario = "COLABORADOR"; contrReal = c.getContrasenia(); nickReal = c.getNickname(); }
                 }
             }
 
@@ -80,19 +91,13 @@ public class InicioSesionServlet extends HttpServlet {
                 return;
             }
 
-            // setear atributos que usa el resto del sitio si el login dio OK
             HttpSession sesion = req.getSession(true);
-
-
-            sesion.setAttribute("tipoUsuario", tipoUsuario);  // "PROPONENTE" | "COLABORADOR"
-            sesion.setAttribute("nick", nickReal);            // nick real
+            sesion.setAttribute("tipoUsuario", tipoUsuario);
+            sesion.setAttribute("nick", nickReal);
             sesion.setAttribute("password", contrasenia);
-
             sesion.setAttribute("sesion", new Sesion(nickReal, tipoUsuario, contrasenia));
 
-            //redirige al index
             resp.sendRedirect(req.getContextPath() + "/index.jsp");
-
 
         } catch (Exception e) {
             req.setAttribute("error", "Error al iniciar sesión: " + e.getMessage());

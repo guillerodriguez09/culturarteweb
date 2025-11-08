@@ -1,20 +1,37 @@
 package com.culturarte.web;
 
-import com.culturarte.logica.clases.Propuesta;
-import com.culturarte.logica.controllers.IPropuestaController;
-import com.culturarte.logica.dtos.DTOPropuesta;
-import com.culturarte.logica.fabrica.Fabrica;
-import javax.servlet.*;
+import com.culturarte.web.ws.cliente.DtoPropuesta;
+import com.culturarte.web.ws.cliente.IPropuestaController;
+
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.*;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
+import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @WebServlet("/buscarPropuesta")
 public class BuscarPropuestaServlet extends HttpServlet {
 
-    private final IPropuestaController propCtrl = Fabrica.getInstancia().getPropuestaController();
+    private IPropuestaController propCtrl;
+
+    @Override
+    public void init() throws ServletException {
+        ServletContext context = getServletContext();
+        this.propCtrl = (IPropuestaController) context.getAttribute("ws.propuesta");
+
+        if (this.propCtrl == null) {
+            throw new ServletException("¡Error crítico! El cliente de Propuesta (ws.propuesta) no se pudo cargar desde ClienteInit.");
+        }
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -27,10 +44,17 @@ public class BuscarPropuestaServlet extends HttpServlet {
         String estado = req.getParameter("estado");
         String orden = req.getParameter("orden");
 
-        List<DTOPropuesta> resultados = propCtrl.buscarPropuestas(filtro);
+        List<DtoPropuesta> resultados;
+        try {
+            resultados = propCtrl.buscarPropuestas(filtro);
+        } catch (Exception e) {
+            req.setAttribute("error", "Error al buscar propuestas: " + e.getMessage());
+            req.setAttribute("resultadosPorEstado", new LinkedHashMap<String, List<DtoPropuesta>>());
+            req.getRequestDispatcher("/resultadosBusqueda.jsp").forward(req, resp);
+            return;
+        }
 
-
-        // Filtro por estado si se seleccionó uno
+        // Filtro por estado (no cambia)
         if (estado != null && !estado.isBlank()) {
             resultados = resultados.stream()
                     .filter(p -> p.getEstadoActual().equalsIgnoreCase(estado))
@@ -39,17 +63,22 @@ public class BuscarPropuestaServlet extends HttpServlet {
 
         // Ordenamiento
         if ("alfabetico".equals(orden)) {
-            resultados.sort(Comparator.comparing(DTOPropuesta::getTitulo, String.CASE_INSENSITIVE_ORDER));
+            resultados.sort(Comparator.comparing(DtoPropuesta::getTitulo, String.CASE_INSENSITIVE_ORDER));
+
         } else if ("fecha".equals(orden)) {
-            resultados.sort(Comparator.comparing(DTOPropuesta::getFecha).reversed());
+            try {
+                resultados.sort(Comparator.comparing(
+                        (DtoPropuesta dto) -> LocalDate.parse(dto.getFecha()) // Convierte String a LocalDate
+                ).reversed());
+            } catch (Exception e) {
+                System.err.println("Error al parsear fecha en sort: " + e.getMessage());
+            }
         }
 
-        // Agrupar por estado para mostrar en pestañas
-        Map<String, List<DTOPropuesta>> agrupadas = resultados.stream()
-                .collect(Collectors.groupingBy(DTOPropuesta::getEstadoActual));
+        Map<String, List<DtoPropuesta>> agrupadas = resultados.stream()
+                .collect(Collectors.groupingBy(DtoPropuesta::getEstadoActual));
 
-        // Para mantener orden de pestañas fijo
-        LinkedHashMap<String, List<DTOPropuesta>> ordenadas = new LinkedHashMap<>();
+        LinkedHashMap<String, List<DtoPropuesta>> ordenadas = new LinkedHashMap<>();
         ordenadas.put("PUBLICADA", agrupadas.getOrDefault("PUBLICADA", List.of()));
         ordenadas.put("EN_FINANCIACION", agrupadas.getOrDefault("EN_FINANCIACION", List.of()));
         ordenadas.put("FINANCIADA", agrupadas.getOrDefault("FINANCIADA", List.of()));
@@ -57,10 +86,8 @@ public class BuscarPropuestaServlet extends HttpServlet {
         ordenadas.put("CANCELADA", agrupadas.getOrDefault("CANCELADA", List.of()));
 
         req.setAttribute("resultadosPorEstado", ordenadas);
-
         req.setAttribute("filtro", filtro);
-        //req.setAttribute("resultados", resultados);
+
         req.getRequestDispatcher("/resultadosBusqueda.jsp").forward(req, resp);
     }
 }
-

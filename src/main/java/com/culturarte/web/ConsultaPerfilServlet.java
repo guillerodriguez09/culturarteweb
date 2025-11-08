@@ -1,19 +1,8 @@
 package com.culturarte.web;
 
-
-import com.culturarte.logica.controllers.IColaboradorController;
-import com.culturarte.logica.controllers.IProponenteController;
-import com.culturarte.logica.controllers.ISeguimientoController;
-
-import com.culturarte.logica.controllers.IColaboracionController;
-import com.culturarte.logica.dtos.DTOColaborador;
-import com.culturarte.logica.dtos.DTOProponente;
-import com.culturarte.logica.dtos.DTOPropuesta;
-
-import com.culturarte.logica.dtos.DTOColabConsulta;
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
-import com.culturarte.logica.fabrica.Fabrica;
-
+import com.culturarte.web.ws.cliente.*;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
@@ -24,124 +13,136 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-
 @WebServlet("/consultaPerfil")
 @MultipartConfig
 public class ConsultaPerfilServlet extends HttpServlet {
 
-    private final IProponenteController propController = Fabrica.getInstancia().getProponenteController();
-    private final IColaboradorController colaController = Fabrica.getInstancia().getColaboradorController();
-    private final ISeguimientoController seguiController = Fabrica.getInstancia().getSeguimientoController();
-    private final IColaboracionController colabController = Fabrica.getInstancia().getColaboracionController();
+    private IProponenteController propController;
+    private IColaboradorController colaController;
+    private ISeguimientoController seguiController;
+    private IColaboracionController colabController;
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    public void init() throws ServletException {
+        ServletContext context = getServletContext();
+        this.propController = (IProponenteController) context.getAttribute("ws.proponente");
+        this.colaController = (IColaboradorController) context.getAttribute("ws.colaborador");
+        this.seguiController = (ISeguimientoController) context.getAttribute("ws.seguimiento");
+        this.colabController = (IColaboracionController) context.getAttribute("ws.colaboracion");
+
+        if (propController == null || colaController == null || seguiController == null || colabController == null) {
+            throw new ServletException("Error crítico: los clientes WS no se pudieron cargar desde ClienteInit.");
+        }
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+
         req.setCharacterEncoding("UTF-8");
         resp.setContentType("text/html;charset=UTF-8");
 
-        req.setAttribute("proponentes", propController.listarTodos());
-        req.setAttribute("colaboradores", colaController.listarTodos());
+
+        try {
+            req.setAttribute("proponentes", propController.listarTodos());
+            req.setAttribute("colaboradores", colaController.listarTodos());
+        } catch (Exception e) {
+            req.setAttribute("error", "Error al listar usuarios: " + e.getMessage());
+        }
 
         String tipoUsr = req.getParameter("tipoUsr");
         String nick = req.getParameter("nick");
+
 
         if (nick == null || tipoUsr == null || nick.isEmpty() || tipoUsr.isEmpty()) {
             req.getRequestDispatcher("/consultaPerfil.jsp").forward(req, resp);
             return;
         }
 
-        // usuario en sesion
+
         HttpSession session = req.getSession(false);
-        String nickSession = null;
-        if (session != null) {
-            // Asumo que tu sesión guarda el nick, no el objeto Sesion
-            nickSession = (String) session.getAttribute("nick");
-        }
-
-        List<String> seguidooresNick;
-        List<String> seguidoosDeNick;
-
-        // ver si es perfil propio y pasarlo al jsp
+        String nickSession = (session != null) ? (String) session.getAttribute("nick") : null;
         boolean esPropioPerfil = (nickSession != null && nickSession.equals(nick));
         req.setAttribute("esPropioPerfil", esPropioPerfil);
 
-        //verificamos si el usuario logueado sigue al perfil q consulta
+
         boolean loSigo = false;
-        if(nickSession != null && !esPropioPerfil){
-            try{
+        if (nickSession != null && !esPropioPerfil) {
+            try {
                 List<String> seguidosPorMi = seguiController.listarSeguidosDeNick(nickSession);
-                if (seguidosPorMi != null) {
-                    loSigo = seguidosPorMi.contains(nick);
-                }
-            } catch (Exception e){
+                if (seguidosPorMi != null) loSigo = seguidosPorMi.contains(nick);
+            } catch (Exception e) {
                 System.err.println("Error al verificar seguimiento: " + e.getMessage());
             }
         }
         req.setAttribute("loSigo", loSigo);
 
-        try{
-            if("proponente".equals(tipoUsr)){
-                List<Object[]> propConPropu = propController.obtenerTodPropConPropu(nick);
-                DTOProponente dtoProponente = new DTOProponente();
-                List<DTOPropuesta> dtoPropuestas = new ArrayList<>();
 
-                if(propConPropu != null && !propConPropu.isEmpty()) {
-                    for (Object[] fila : propConPropu) {
-                        DTOProponente prop = (DTOProponente) fila[0];
-                        DTOPropuesta propu = (DTOPropuesta) fila[1];
+        List<String> seguidooresNick;
+        List<String> seguidoosDeNick;
+        List<DtoPropuesta> propuestas = new ArrayList<>();
 
-                        dtoProponente = prop;
-                        dtoPropuestas.add(propu);
+        try {
+            if ("proponente".equalsIgnoreCase(tipoUsr)) {
+
+                DtoProponente dtoProponente = propController.obtenerProponente(nick);
+                List<AnyTypeArray> propConPropuWrappers = propController.obtenerTodPropConPropu(nick);
+
+                if (propConPropuWrappers != null) {
+                    for (AnyTypeArray filaWrapper : propConPropuWrappers) {
+                        List<Object> fila = filaWrapper.getItem();
+                        if (fila != null && fila.size() >= 2 && fila.get(1) instanceof DtoPropuesta) {
+                            propuestas.add((DtoPropuesta) fila.get(1));
+                        }
                     }
-                }else{
-                    dtoProponente = propController.obtenerProponente(nick);
                 }
-                req.setAttribute("proponenteSeleccionado", dtoProponente);
-                req.setAttribute("propuestasDeProponente", dtoPropuestas);
-                seguidooresNick = seguiController.listarSeguidoresDeNick(nick);
-                req.setAttribute("seguidooresNick", seguidooresNick);
-                seguidoosDeNick = seguiController.listarSeguidosDeNick(nick);
-                req.setAttribute("seguidoosDeNick", seguidoosDeNick);
 
-            }else if("colaborador".equals(tipoUsr)){
-                List<Object[]> colConPropu = colaController.obtenerTodColConPropu(nick);
-                DTOColaborador dtoColaborador = new DTOColaborador();
-                List<DTOPropuesta> dtoPropuestas = new ArrayList<>();
-                if(colConPropu != null && !colConPropu.isEmpty()) {
-                    for (Object[] fila : colConPropu) {
-                        DTOColaborador col = (DTOColaborador) fila[0];
-                        DTOPropuesta propu = (DTOPropuesta) fila[1];
+                req.setAttribute("usuarioSeleccionado", dtoProponente);
+                req.setAttribute("tipoPerfil", "PROPONENTE");
+                req.setAttribute("propuestas", propuestas);
 
-                        dtoColaborador = col;
-                        dtoPropuestas.add(propu);
+            } else if ("colaborador".equalsIgnoreCase(tipoUsr)) {
+
+                DtoColaborador dtoColaborador = colaController.obtenerColaborador(nick);
+                List<AnyTypeArray> colConPropuWrappers = colaController.obtenerTodColConPropu(nick);
+
+                if (colConPropuWrappers != null) {
+                    for (AnyTypeArray filaWrapper : colConPropuWrappers) {
+                        List<Object> fila = filaWrapper.getItem();
+                        if (fila != null && fila.size() >= 2 && fila.get(1) instanceof DtoPropuesta) {
+                            propuestas.add((DtoPropuesta) fila.get(1));
+                        }
                     }
-                }else{
-                    dtoColaborador = colaController.obtenerColaborador(nick);
                 }
-                req.setAttribute("colaboradorSeleccionado", dtoColaborador);
-                req.setAttribute("colaboracionesDeColaborador", dtoPropuestas);
+
+                req.setAttribute("usuarioSeleccionado", dtoColaborador);
+                req.setAttribute("tipoPerfil", "COLABORADOR");
+                req.setAttribute("propuestas", propuestas);
 
                 if (esPropioPerfil) {
-                    List<DTOColabConsulta> detalles = colabController.consultarColaboracionesPorColaborador(nick);
+                    List<DtoColabConsulta> detalles = colabController.consultarColaboracionesPorColaborador(nick);
                     req.setAttribute("colaboracionesDetalladas", detalles);
                 }
-
-                seguidooresNick = seguiController.listarSeguidoresDeNick(nick);
-                req.setAttribute("seguidooresNick", seguidooresNick);
-                seguidoosDeNick = seguiController.listarSeguidosDeNick(nick);
-                req.setAttribute("seguidoosDeNick", seguidoosDeNick);
             }
 
-        }catch(Exception e){
-            req.setAttribute("error", e.getMessage());
+            // Seguidores
+            seguidooresNick = seguiController.listarSeguidoresDeNick(nick);
+            seguidoosDeNick = seguiController.listarSeguidosDeNick(nick);
+            req.setAttribute("seguidooresNick", seguidooresNick);
+            req.setAttribute("seguidoosDeNick", seguidoosDeNick);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            req.setAttribute("error", "Error al cargar perfil: " + e.getMessage());
         }
 
-        // al final se hace el forward
         req.getRequestDispatcher("/consultaPerfil.jsp").forward(req, resp);
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
         doGet(req, resp);
     }
 }
+

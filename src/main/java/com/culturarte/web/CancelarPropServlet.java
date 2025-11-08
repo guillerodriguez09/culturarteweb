@@ -1,8 +1,8 @@
 package com.culturarte.web;
 
-import com.culturarte.logica.controllers.IPropuestaController;
-import com.culturarte.logica.fabrica.Fabrica;
+import com.culturarte.web.ws.cliente.IPropuestaController;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -14,7 +14,20 @@ import java.io.IOException;
 @WebServlet("/cancelarPropuesta")
 public class CancelarPropServlet extends HttpServlet {
 
-    private final IPropuestaController propCtrl = Fabrica.getInstancia().getPropuestaController();
+
+    private IPropuestaController propCtrl;
+
+
+    @Override
+    public void init() throws ServletException {
+        ServletContext context = getServletContext();
+        this.propCtrl = (IPropuestaController) context.getAttribute("ws.propuesta");
+
+        if (this.propCtrl == null) {
+            throw new ServletException("¡Error crítico! El cliente de Propuesta (ws.propuesta) no se pudo cargar desde ClienteInit.");
+        }
+    }
+
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -38,13 +51,14 @@ public class CancelarPropServlet extends HttpServlet {
         }
 
         try {
+
             propCtrl.cancelarPropuesta(titulo);
             req.setAttribute("mensaje", "La propuesta '" + titulo + "' fue cancelada exitosamente.");
         } catch (Exception e) {
             req.setAttribute("error", e.getMessage());
         }
 
-        // Redirige al listado
+
         req.getRequestDispatcher("/consultarPropuesta").forward(req, resp);
     }
 }

@@ -1,4 +1,5 @@
 package com.culturarte.web;
+import com.culturarte.web.ws.cliente.*;
 
 public class Sesion {
 

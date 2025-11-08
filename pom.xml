@@ -19,13 +19,6 @@
     </properties>
 
     <dependencies>
-        <!-- Dependencia al Servidor Central (ya instalado con mvn install) -->
-        <dependency>
-            <groupId>com.culturarte</groupId>
-            <artifactId>culturartepda</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-
         <!-- API de Servlets (Tomcat 9 usa javax.servlet) -->
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -48,6 +41,24 @@
             <version>4.13.2</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>jakarta.xml.ws</groupId>
+            <artifactId>jakarta.xml.ws-api</artifactId>
+            <version>4.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.ws</groupId>
+            <artifactId>jaxws-rt</artifactId>
+            <version>4.0.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <version>4.0.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -62,6 +73,36 @@
                     <release>21</release>
                 </configuration>
             </plugin>
+
+            <!-- Plugin moderno para generar clases del WS -->
+            <plugin>
+                <groupId>com.sun.xml.ws</groupId>
+                <artifactId>jaxws-maven-plugin</artifactId>
+                <version>4.0.3</version>
+                <executions>
+                    <execution>
+                        <id>wsimport</id>
+                        <goals>
+                            <goal>wsimport</goal>
+                        </goals>
+                        <configuration>
+                            <wsdlUrls>
+                                <wsdlUrl>http://localhost:9128/proponente?wsdl</wsdlUrl>
+                                <wsdlUrl>http://localhost:9128/colaborador?wsdl</wsdlUrl>
+                                <wsdlUrl>http://localhost:9128/propuesta?wsdl</wsdlUrl>
+                                <wsdlUrl>http://localhost:9128/colaboracion?wsdl</wsdlUrl>
+                                <wsdlUrl>http://localhost:9128/seguimiento?wsdl</wsdlUrl>
+                                <wsdlUrl>http://localhost:9128/categoria?wsdl</wsdlUrl>
+                            </wsdlUrls>
+                            <packageName>com.culturarte.web.ws.cliente</packageName>
+                            <sourceDestDir>${project.build.directory}/generated-sources/wsimport</sourceDestDir>
+                            <keep>true</keep>
+                            <vmArgs>--add-opens java.base/java.lang=ALL-UNNAMED</vmArgs>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
+
 </project>

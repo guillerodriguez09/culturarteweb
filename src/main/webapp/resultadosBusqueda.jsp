@@ -1,12 +1,7 @@
-<%@ page import="com.culturarte.logica.dtos.DTOPropuesta" %>
+
 <%@ page import="java.util.List" %>
-<%@ page import="java.util.Map" %><%--
-  Created by IntelliJ IDEA.
-  User: guillerodriguezz
-  Date: 12/10/25
-  Time: 19:19
-  To change this template use File | Settings | File Templates.
---%>
+<%@ page import="java.util.Map" %>
+<%@ page import="com.culturarte.web.ws.cliente.DtoPropuesta" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
@@ -40,8 +35,8 @@
     </form>
 
     <%
-        Map<String, List<DTOPropuesta>> resultadosPorEstado =
-                (Map<String, List<DTOPropuesta>>) request.getAttribute("resultadosPorEstado");
+        Map<String, List<DtoPropuesta>> resultadosPorEstado =
+                (Map<String, List<DtoPropuesta>>) request.getAttribute("resultadosPorEstado");
 
         if (resultadosPorEstado == null || resultadosPorEstado.values().stream().allMatch(List::isEmpty)) {
     %>
@@ -62,16 +57,16 @@
 
     <div class="tab-content mt-3">
         <% first = true;
-            for (Map.Entry<String, List<DTOPropuesta>> entry : resultadosPorEstado.entrySet()) {
+            for (Map.Entry<String, List<DtoPropuesta>> entry : resultadosPorEstado.entrySet()) {
                 String estado = entry.getKey();
-                List<DTOPropuesta> lista = entry.getValue(); %>
+                List<DtoPropuesta> lista = entry.getValue(); %>
 
         <div class="tab-pane fade <%= first ? "show active" : "" %>" id="<%= estado %>">
             <div class="row">
                 <% if (lista.isEmpty()) { %>
                 <p class="text-muted p-3">No hay propuestas en este estado.</p>
                 <% } else {
-                    for (DTOPropuesta p : lista) { %>
+                    for (DtoPropuesta p : lista) { %>
                 <div class="col-md-4 mb-4">
                     <div class="card h-100 shadow-sm">
                         <img src="<%= request.getContextPath() + "/" +
