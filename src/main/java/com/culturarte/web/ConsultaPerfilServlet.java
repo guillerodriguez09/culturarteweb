@@ -42,9 +42,8 @@ public class ConsultaPerfilServlet extends HttpServlet {
         req.setCharacterEncoding("UTF-8");
         resp.setContentType("text/html;charset=UTF-8");
 
-
         try {
-            req.setAttribute("proponentes", propController.listarTodos());
+            req.setAttribute("proponentes", propController.listarTodosProponente());
             req.setAttribute("colaboradores", colaController.listarTodos());
         } catch (Exception e) {
             req.setAttribute("error", "Error al listar usuarios: " + e.getMessage());
@@ -53,18 +52,15 @@ public class ConsultaPerfilServlet extends HttpServlet {
         String tipoUsr = req.getParameter("tipoUsr");
         String nick = req.getParameter("nick");
 
-
         if (nick == null || tipoUsr == null || nick.isEmpty() || tipoUsr.isEmpty()) {
             req.getRequestDispatcher("/consultaPerfil.jsp").forward(req, resp);
             return;
         }
 
-
         HttpSession session = req.getSession(false);
         String nickSession = (session != null) ? (String) session.getAttribute("nick") : null;
         boolean esPropioPerfil = (nickSession != null && nickSession.equals(nick));
         req.setAttribute("esPropioPerfil", esPropioPerfil);
-
 
         boolean loSigo = false;
         if (nickSession != null && !esPropioPerfil) {
@@ -77,56 +73,53 @@ public class ConsultaPerfilServlet extends HttpServlet {
         }
         req.setAttribute("loSigo", loSigo);
 
-
         List<String> seguidooresNick;
         List<String> seguidoosDeNick;
-        List<DtoPropuesta> propuestas = new ArrayList<>();
 
         try {
             if ("proponente".equalsIgnoreCase(tipoUsr)) {
 
                 DtoProponente dtoProponente = propController.obtenerProponente(nick);
-                List<AnyTypeArray> propConPropuWrappers = propController.obtenerTodPropConPropu(nick);
+                List<DtoPropoPropu> propConPropuList = propController.obtenerTodPropConPropu(nick);
 
-                if (propConPropuWrappers != null) {
-                    for (AnyTypeArray filaWrapper : propConPropuWrappers) {
-                        List<Object> fila = filaWrapper.getItem();
-                        if (fila != null && fila.size() >= 2 && fila.get(1) instanceof DtoPropuesta) {
-                            propuestas.add((DtoPropuesta) fila.get(1));
+                List<DtoPropuesta> propuestas = new ArrayList<>();
+                if (propConPropuList != null && !propConPropuList.isEmpty()) {
+                    for (DtoPropoPropu pack : propConPropuList) {
+                        if (pack.getPropuestas() != null) {
+                            propuestas.addAll(pack.getPropuestas());
                         }
                     }
                 }
 
-                req.setAttribute("usuarioSeleccionado", dtoProponente);
-                req.setAttribute("tipoPerfil", "PROPONENTE");
-                req.setAttribute("propuestas", propuestas);
+                req.setAttribute("proponenteSeleccionado", dtoProponente);
+                req.setAttribute("propuestasDeProponente", propuestas);
+                req.setAttribute("colaboradorSeleccionado", null);
 
             } else if ("colaborador".equalsIgnoreCase(tipoUsr)) {
 
-                DtoColaborador dtoColaborador = colaController.obtenerColaborador(nick);
-                List<AnyTypeArray> colConPropuWrappers = colaController.obtenerTodColConPropu(nick);
+            DtoColaborador dtoColaborador = colaController.obtenerColaborador(nick);
+            List<DtoColPropu> colConPropuList = colaController.obtenerTodColConPropu(nick);
 
-                if (colConPropuWrappers != null) {
-                    for (AnyTypeArray filaWrapper : colConPropuWrappers) {
-                        List<Object> fila = filaWrapper.getItem();
-                        if (fila != null && fila.size() >= 2 && fila.get(1) instanceof DtoPropuesta) {
-                            propuestas.add((DtoPropuesta) fila.get(1));
-                        }
+            List<DtoPropuesta> propuestas = new ArrayList<>();
+            if (colConPropuList != null && !colConPropuList.isEmpty()) {
+                for (DtoColPropu pack : colConPropuList) {
+                    if (pack.getPropuestas() != null) {
+                        propuestas.addAll(pack.getPropuestas());
                     }
-                }
-
-                req.setAttribute("usuarioSeleccionado", dtoColaborador);
-                req.setAttribute("tipoPerfil", "COLABORADOR");
-                req.setAttribute("propuestas", propuestas);
-
-                if (esPropioPerfil) {
-                    List<DtoColabConsulta> detalles = colabController.consultarColaboracionesPorColaborador(nick);
-                    req.setAttribute("colaboracionesDetalladas", detalles);
                 }
             }
 
-            // Seguidores
-            seguidooresNick = seguiController.listarSeguidoresDeNick(nick);
+            req.setAttribute("colaboradorSeleccionado", dtoColaborador);
+            req.setAttribute("colaboracionesDeColaborador", propuestas);
+            req.setAttribute("proponenteSeleccionado", null);
+
+            if (esPropioPerfil) {
+                List<DtoColabConsulta> detalles = colabController.consultarColaboracionesPorColaborador(nick);
+                req.setAttribute("colaboracionesDetalladas", detalles);
+            }
+        }
+
+        seguidooresNick = seguiController.listarSeguidoresDeNick(nick);
             seguidoosDeNick = seguiController.listarSeguidosDeNick(nick);
             req.setAttribute("seguidooresNick", seguidooresNick);
             req.setAttribute("seguidoosDeNick", seguidoosDeNick);
@@ -145,4 +138,3 @@ public class ConsultaPerfilServlet extends HttpServlet {
         doGet(req, resp);
     }
 }
-
