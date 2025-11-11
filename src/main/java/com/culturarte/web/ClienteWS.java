@@ -65,6 +65,10 @@ public class ClienteWS implements ServletContextListener {
             ICategoriaController catController = catService.getCategoriaControllerPort();
 
 
+            URL accesoWSDL = new URL(baseUrl + "/acceso?wsdl");
+            AccesoControllerService accesoService = new AccesoControllerService(accesoWSDL);
+            IAccesoController accesoController = accesoService.getAccesoControllerPort();
+
             // Guardamos los clientes en el ServletContext
             context.setAttribute("ws.proponente", propController);
             context.setAttribute("ws.colaborador", colaController);
@@ -72,6 +76,7 @@ public class ClienteWS implements ServletContextListener {
             context.setAttribute("ws.colaboracion", colabController);
             context.setAttribute("ws.seguimiento", seguiController);
             context.setAttribute("ws.categoria", catController);
+            context.setAttribute("ws.acceso", accesoController);
 
             System.out.println("¡Clientes de Web Service inicializados con éxito!");
 

@@ -128,3 +128,4 @@ public class RegistrarColaboracionServlet extends HttpServlet {
             doGet(req, resp); // Recarga la página con el error
         }
     }
+}

@@ -93,6 +93,7 @@
                                 <wsdlUrl>http://localhost:9128/colaboracion?wsdl</wsdlUrl>
                                 <wsdlUrl>http://localhost:9128/seguimiento?wsdl</wsdlUrl>
                                 <wsdlUrl>http://localhost:9128/categoria?wsdl</wsdlUrl>
+                                <wsdlUrl>http://localhost:9128/acceso?wsdl</wsdlUrl>
                             </wsdlUrls>
                             <packageName>com.culturarte.web.ws.cliente</packageName>
                             <sourceDestDir>${project.build.directory}/generated-sources/wsimport</sourceDestDir>
