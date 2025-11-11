@@ -145,6 +145,15 @@
                                 </form>
                                 <% } %>
                             </div>
+                            <% }else if(nickSesion != null && esPropioPerfil){ %>
+                            <div class="mt-3">
+                            <form action="bajaProponente" method="post" style="display: inline;">
+                                <input type="hidden" name="tipoUsr" value="proponente">
+                                <button type="submit" class="btn btn-outline-danger btn-sm">
+                                    <i class="bi bi-person-dash"></i> Dar de Baja
+                                </button>
+                            </form>
+                            </div>
                             <% } %>
 
                             <div class="d-flex justify-content-around text-center mt-3 pt-3 border-top">
