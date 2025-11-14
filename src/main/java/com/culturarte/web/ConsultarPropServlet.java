@@ -35,12 +35,31 @@ public class ConsultarPropServlet extends HttpServlet {
         req.setCharacterEncoding("UTF-8");
         resp.setContentType("text/html;charset=UTF-8");
 
-        // Cargar las propuestas por estado
-        req.setAttribute("publicadas", propCtrl.listarPorEstado(EEstadoPropuesta.PUBLICADA));
-        req.setAttribute("enFinanciacion", propCtrl.listarPorEstado(EEstadoPropuesta.EN_FINANCIACION));
-        req.setAttribute("financiadas", propCtrl.listarPorEstado(EEstadoPropuesta.FINANCIADA));
-        req.setAttribute("noFinanciadas", propCtrl.listarPorEstado(EEstadoPropuesta.NO_FINANCIADA));
-        req.setAttribute("canceladas", propCtrl.listarPorEstado(EEstadoPropuesta.CANCELADA));
+        String titulo = req.getParameter("titulo");
+        if (titulo != null && !titulo.isEmpty()) {
+            try {
+                DtoPropuesta dto = propCtrl.consultarPropuesta(titulo);
+                req.setAttribute("propuestaSeleccionada", dto);
+                req.setAttribute("colaboradores", dto.getColaboradores());
+                req.setAttribute("montoRecaudado", dto.getMontoRecaudado());
+
+                List<ETipoRetorno> tiposRetorno = Arrays.asList(ETipoRetorno.values());
+                req.setAttribute("tiposRetorno", tiposRetorno);
+
+            } catch (Exception e) {
+                req.setAttribute("error", "No se pudo cargar la propuesta: " + e.getMessage());
+            }
+        }
+
+        try {
+            req.setAttribute("publicadas", propCtrl.listarPorEstado(EEstadoPropuesta.PUBLICADA));
+            req.setAttribute("enFinanciacion", propCtrl.listarPorEstado(EEstadoPropuesta.EN_FINANCIACION));
+            req.setAttribute("financiadas", propCtrl.listarPorEstado(EEstadoPropuesta.FINANCIADA));
+            req.setAttribute("noFinanciadas", propCtrl.listarPorEstado(EEstadoPropuesta.NO_FINANCIADA));
+            req.setAttribute("canceladas", propCtrl.listarPorEstado(EEstadoPropuesta.CANCELADA));
+        } catch (Exception e) {
+            System.err.println("Error cargando listas: " + e.getMessage());
+        }
 
         req.getRequestDispatcher("/consultarPropuesta.jsp").forward(req, resp);
     }

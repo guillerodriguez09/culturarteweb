@@ -17,6 +17,23 @@
 
 <jsp:include page="compartidos/header.jsp"/>
 <div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <%
+                String errorMsg = (String) request.getAttribute("error");
+                String exitoMsg = (String) request.getAttribute("mensaje");
+            %>
+
+            <% if (errorMsg != null && !errorMsg.isEmpty()) { %>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <strong>¡Error!</strong> <%= errorMsg %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <% } %>
+        </div>
+    </div>
+    <%-- FIN DEL BLOQUE DE MENSAJES --%>
     <div class="card shadow-lg">
         <div class="card-header bg-primary text-white">
             <h3 class="mb-0">Alta de Perfil</h3>
@@ -26,6 +43,7 @@
                 <div class="mb-3">
                     <label for="nick" class="form-label">Nickname</label>
                     <input type="text" class="form-control" id="nick" name="nick" required>
+                    <span id="mensajeNick" class="form-text fw-bold"></span>
                 </div>
                 <div class="mb-3">
                     <label for="nombre" class="form-label">Nombre</label>
@@ -40,8 +58,9 @@
                     <input type="text" class="form-control" id="contrasenia" name="contrasenia" required>
                 </div>
                 <div class="mb-3">
-                    <label for="correo" class="form-label">Correo</label>
-                    <input type="text" class="form-control" id="correo" name="correo" required>
+                    <label for="correo" class="form-label">Correo Electrónico</label>
+                    <input type="email" class="form-control" id="correo" name="correo" required>
+                    <span id="mensajeCorreo" class="form-text fw-bold"></span>
                 </div>
                 <div class="mb-3">
                     <label for="fechaNac" class="form-label">Fecha de Nacimiento</label>

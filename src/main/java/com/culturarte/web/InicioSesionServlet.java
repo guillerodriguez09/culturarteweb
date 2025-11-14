@@ -1,15 +1,13 @@
 package com.culturarte.web;
 
-import com.culturarte.web.ws.cliente.DtoColaborador;
-import com.culturarte.web.ws.cliente.DtoProponente;
-import com.culturarte.web.ws.cliente.IColaboradorController;
-import com.culturarte.web.ws.cliente.IProponenteController;
+import com.culturarte.web.ws.cliente.*;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
+import java.util.List;
 
 @WebServlet("/inicioSesion")
 public class InicioSesionServlet extends HttpServlet {
@@ -17,17 +15,18 @@ public class InicioSesionServlet extends HttpServlet {
 
     private IProponenteController propController;
     private IColaboradorController colaController;
+    private IPropuestaController propuController;
 
     @Override
     public void init() throws ServletException {
         ServletContext context = getServletContext();
 
-        // ¡Buscamos los clientes que creó el ClienteInit!
         this.propController = (IProponenteController) context.getAttribute("ws.proponente");
         this.colaController = (IColaboradorController) context.getAttribute("ws.colaborador");
+        this.propuController = (IPropuestaController) context.getAttribute("ws.propuesta");
 
-        if (this.propController == null || this.colaController == null) {
-            throw new ServletException("¡Error crítico! Los clientes de InicioSesionServlet no se pudieron cargar desde ClienteInit.");
+        if (this.propController == null || this.colaController == null || this.propuController == null) {
+            throw new ServletException("¡Error crítico! Uno de los clientes WS no se pudo cargar desde ClienteInit.");
         }
     }
 
@@ -96,6 +95,18 @@ public class InicioSesionServlet extends HttpServlet {
             sesion.setAttribute("nick", nickReal);
             sesion.setAttribute("password", contrasenia);
             sesion.setAttribute("sesion", new Sesion(nickReal, tipoUsuario, contrasenia));
+
+            if (tipoUsuario.equals("COLABORADOR")) {
+                try {
+                    List<DtoPropuesta> recomendaciones = this.propuController.recomendarPropuestas(nickReal);
+
+                    if (recomendaciones != null && !recomendaciones.isEmpty()) {
+                        sesion.setAttribute("recomendaciones", recomendaciones);
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error al cargar recomendaciones: " + e.getMessage());
+                }
+            }
 
             resp.sendRedirect(req.getContextPath() + "/index.jsp");
 
