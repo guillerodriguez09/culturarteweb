@@ -392,7 +392,11 @@
                                     <span class="badge bg-secondary mt-2">Constancia emitida</span>
 
                                 <% } %>
-
+                                    <!-- Botón para descargar PDF de la constancia -->
+                                    <a href="<%= request.getContextPath() %>/descargarConstanciaPDF?idColab=<%= c.getId() %>"
+                                       class="btn btn-danger btn-sm mt-2">
+                                        <i class="bi bi-file-earmark-pdf"></i> Descargar PDF
+                                    </a>
                             </li>
 
                         <% }
