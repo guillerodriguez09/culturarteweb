@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="com.culturarte.web.ws.cliente.*" %>
+
 <%@ page import="java.util.*" %>
 
 <html>
@@ -367,52 +368,78 @@
                     <hr>
                     <h5 class="mt-3">Colaboraciones</h5>
                     <ul class="list-group list-group-flush">
-                        <%
-                            // es perfil propio (muestra monto y fecha)
-                            if (esPropioPerfil && colabsDetalladas != null && !colabsDetalladas.isEmpty()) {
-                                for (DtoColabConsulta c : colabsDetalladas) {
-                        %>
-                        <li class="list-group-item">
-                            <strong><%= c.getPropuestaNombre() %></strong>
-                            <ul class="list-unstyled ms-3 mt-2 small text-muted">
-                                <li><strong>Monto:</strong> $<%= c.getMonto() %></li>
-                                <li><strong>Fecha:</strong> <%= c.getFecha() != null ? c.getFecha(): "N/A" %></li>
-                            </ul>
-                        </li>
-                        <% } } else if (colaboracionesDeColaborador != null && !colaboracionesDeColaborador.isEmpty()) {
-                            // es perfil ajeno (muestra collapse con detalles)
-                            for(DtoPropuesta p : colaboracionesDeColaborador){
-                                String collapseId = "propuesta-" + Math.abs(p.getTitulo().hashCode());
-                        %>
-                        <li class="list-group-item">
-                            <a class="btn btn-link p-0" data-bs-toggle="collapse" href="#<%= collapseId %>">
-                                <%= p.getTitulo() %>
-                            </a>
-                            <div class="collapse mt-2" id="<%= collapseId %>">
-                                <div class="card card-body">
-                                    <p><strong>Descripción: </strong><%= p.getDescripcion() %></p>
-                                    <p><strong>Lugar:</strong> <%= p.getLugar() %></p>
-                                    <p><strong>Estado:</strong> <%= p.getEstadoActual() %></p>
-                                    <p><strong>Monto a reunir:</strong> $<%= p.getMontoAReunir() %></p>
-                                    <p><strong>Monto recaudado:</strong> $<%= p.getMontoRecaudado() %></p>
+                        <% if (esPropioPerfil && colabsDetalladas != null && !colabsDetalladas.isEmpty()) {
+                               for (DtoColabConsulta c : colabsDetalladas) { %>
 
-                                    <% if (p.getImagen() != null && !p.getImagen().isEmpty()) { %>
-                                    <img src="<%= request.getContextPath() + "/" + p.getImagen() %>"
-                                         class="img-fluid rounded shadow-sm" alt="Imagen de la propuesta">
-                                    <% } else { %>
-                                    <img src="<%= request.getContextPath() + "/imagenes/404.png" %>"
-                                         class="img-fluid rounded shadow-sm" alt="Sin imagen disponible">
-                                    <% } %>
+                            <li class="list-group-item">
+                                <strong><%= c.getPropuestaNombre() %></strong>
+
+                                <ul class="list-unstyled ms-3 mt-2 small text-muted">
+                                    <li><strong>Monto:</strong> $<%= c.getMonto() %></li>
+                                    <li><strong>Fecha:</strong> <%= c.getFecha() != null ? c.getFecha() : "N/A" %></li>
+                                </ul>
+
+                                <%-- botón para emitir constancia --%>
+                                <% if (c.isConstanciaEmitida() == null || !c.isConstanciaEmitida()) { %>
+
+                                    <a href="emitirConstancia?idColab=<%= c.getId() %>"
+                                       class="btn btn-sm btn-success mt-2">
+                                        Emitir constancia
+                                    </a>
+
+                                <% } else { %>
+
+                                    <span class="badge bg-secondary mt-2">Constancia emitida</span>
+
+                                <% } %>
+                                    <!-- Botón para descargar PDF de la constancia -->
+                                    <a href="<%= request.getContextPath() %>/descargarConstanciaPDF?idColab=<%= c.getId() %>"
+                                       class="btn btn-danger btn-sm mt-2">
+                                        <i class="bi bi-file-earmark-pdf"></i> Descargar PDF
+                                    </a>
+                            </li>
+
+                        <% }
+                           }
+                           else if (colaboracionesDeColaborador != null && !colaboracionesDeColaborador.isEmpty()) {
+
+                               for (DtoPropuesta p : colaboracionesDeColaborador) {
+                                   String collapseId = "propuesta-" + Math.abs(p.getTitulo().hashCode());
+                        %>
+
+                            <li class="list-group-item">
+                                <a class="btn btn-link p-0" data-bs-toggle="collapse" href="#<%= collapseId %>">
+                                    <%= p.getTitulo() %>
+                                </a>
+                                <div class="collapse mt-2" id="<%= collapseId %>">
+                                    <div class="card card-body">
+                                        <p><strong>Descripción: </strong><%= p.getDescripcion() %></p>
+                                        <p><strong>Lugar:</strong> <%= p.getLugar() %></p>
+                                        <p><strong>Estado:</strong> <%= p.getEstadoActual() %></p>
+                                        <p><strong>Monto a reunir:</strong> $<%= p.getMontoAReunir() %></p>
+                                        <p><strong>Monto recaudado:</strong> $<%= p.getMontoRecaudado() %></p>
+
+                                        <% if (p.getImagen() != null && !p.getImagen().isEmpty()) { %>
+                                            <img src="<%= request.getContextPath() + "/" + p.getImagen() %>"
+                                                 class="img-fluid rounded shadow-sm" alt="Imagen de la propuesta">
+                                        <% } else { %>
+                                            <img src="<%= request.getContextPath() + "/imagenes/404.png" %>"
+                                                 class="img-fluid rounded shadow-sm" alt="Sin imagen disponible">
+                                        <% } %>
+
+                                    </div>
                                 </div>
-                            </div>
-                        </li>
-                        <% } } else { %>
-                        <p class="text-muted p-2">No tiene colaboraciones.</p>
+                            </li>
+
+                        <% } // cierre for
+                           } else { %>
+
+                            <p class="text-muted p-2">No tiene colaboraciones.</p>
+
                         <% } %>
                     </ul>
                 </div>
             </div>
-
             <% } else { %>
             <div class="d-flex align-items-center justify-content-center bg-light rounded-3 text-center" style="min-height: 50vh;">
                 <div>
