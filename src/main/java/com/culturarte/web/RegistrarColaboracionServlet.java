@@ -125,7 +125,7 @@ public class RegistrarColaboracionServlet extends HttpServlet {
 
         } catch (Exception e) {
             req.setAttribute("error", "Error al registrar colaboración: " + e.getMessage());
-            doGet(req, resp); // Recarga la página con el error
+            req.getRequestDispatcher("/consultarPropuesta.jsp").forward(req, resp);
         }
     }
 }
