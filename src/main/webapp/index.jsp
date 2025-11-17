@@ -60,7 +60,7 @@
 
 
                             <a href="consultarPropuesta?titulo=${prop.titulo}" class="btn btn-primary mt-auto">
-                                Ver Propuesta
+                                Ver la Propuesta
                             </a>
                         </div>
                         <div class="card-footer">
