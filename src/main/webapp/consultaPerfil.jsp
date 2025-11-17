@@ -21,11 +21,11 @@
     Object proObj = request.getAttribute("proponenteSeleccionado");
     Object colObj = request.getAttribute("colaboradorSeleccionado");
 
-    // 2. Inicializamos las variables como null
+    // Inicializamos las variables como null
     DtoProponente pro = null;
     DtoColaborador col = null;
 
-    // 3. Usamos 'instanceof' para verificar el tipo ANTES de hacer el cast
+    // Usamos 'instanceof' para verificar el tipo ANTES de hacer el cast
     if (proObj instanceof DtoProponente) {
         pro = (DtoProponente) proObj;
     }
@@ -483,24 +483,23 @@
                     method: 'POST',
                     body: formData
                 })
-                    .then(response => {
+                    .then(async response => {
                         if (response.ok) {
-                            // borrar de la lista
                             const elemento = document.getElementById(idElementoABorrar);
-                            if (elemento) {
-                                elemento.remove();
-                            }
+                            if (elemento) elemento.remove();
 
-                            // actualizar el contador
                             const contador = document.getElementById('contador-seguidos');
                             if (contador) {
                                 let num = parseInt(contador.innerText);
-                                if (!isNaN(num) && num > 0) {
-                                    contador.innerText = num - 1;
-                                }
+                                if (!isNaN(num) && num > 0) contador.innerText = num - 1;
                             }
                         } else {
-                            alert('Error al intentar dejar de seguir.');
+
+                            const errorMsg = await response.text();
+                            console.error("Error del servidor:", errorMsg);
+                            alert('No se pudo dejar de seguir. El servidor respondió: ' + (errorMsg || response.status));
+
+                            location.reload();
                         }
                     })
                     .catch(error => {

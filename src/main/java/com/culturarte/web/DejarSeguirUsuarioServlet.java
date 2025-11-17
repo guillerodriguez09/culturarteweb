@@ -52,6 +52,10 @@ public class DejarSeguirUsuarioServlet extends HttpServlet {
 
         HttpSession sesion = req.getSession(false);
         if (sesion == null || sesion.getAttribute("nick") == null) {
+            if ("true".equals(req.getParameter("ajax"))) {
+                resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
             resp.sendRedirect("inicioSesion.jsp");
             return;
         }
@@ -59,41 +63,46 @@ public class DejarSeguirUsuarioServlet extends HttpServlet {
         String nickSeguidor = (String) sesion.getAttribute("nick");
         String nickSeguido = req.getParameter("usuarioSeguido");
         String esAjax = req.getParameter("ajax");
+        String tipoUsr = req.getParameter("tipoUsr");
 
         if (nickSeguido == null || nickSeguido.isEmpty()) {
             if ("true".equals(esAjax)) {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 resp.getWriter().write("Usuario a seguir no puede ser nulo.");
             } else {
-                req.setAttribute("mensajeError", "Debe seleccionar un usuario a dejar de seguir.");
+                req.setAttribute("mensajeError", "Debe seleccionar un usuario.");
                 doGet(req, resp);
             }
             return;
         }
 
         try {
-            int idSegui = segCtrl.conseguirId(nickSeguidor, nickSeguido);
+            int idSegui = segCtrl.conseguirId(nickSeguidor.trim(), nickSeguido.trim());
+
             if (idSegui > 0) {
                 segCtrl.cancelarSeguimiento(idSegui);
-                req.setAttribute("mensajeExito", "Has dejado de seguir a " + nickSeguido + ".");
+                if ("true".equals(esAjax)) {
+                    resp.setStatus(HttpServletResponse.SC_OK);
+                    return;
+                }
             } else {
-                req.setAttribute("mensajeError", "No se encontró seguimiento para cancelar.");
+                if ("true".equals(esAjax)) {
+                    resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    resp.getWriter().write("No se encontró la relación de seguimiento.");
+                    return;
+                } else {
+                    req.setAttribute("mensajeError", "No se encontró seguimiento para cancelar.");
+                }
             }
         } catch (Exception e) {
-            req.setAttribute("mensajeError", "Error al intentar dejar de seguir: " + e.getMessage());
-
+            e.printStackTrace();
             if ("true".equals(esAjax)) {
                 resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                resp.getWriter().write(e.getMessage());
+                resp.getWriter().write("Error interno: " + e.getMessage());
                 return;
             }
+            req.setAttribute("mensajeError", "Error: " + e.getMessage());
         }
-
-        if ("true".equals(esAjax)) {
-            resp.setStatus(HttpServletResponse.SC_OK);
-        } else {
-            String tipoUsr = req.getParameter("tipoUsr");
-            resp.sendRedirect("consultaPerfil?nick=" + nickSeguido + "&tipoUsr=" + tipoUsr);
-        }
+        resp.sendRedirect("consultaPerfil?nick=" + nickSeguido + "&tipoUsr=" + (tipoUsr != null ? tipoUsr : "proponente"));
     }
 }

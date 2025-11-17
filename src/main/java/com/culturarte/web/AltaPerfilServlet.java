@@ -11,7 +11,6 @@ import java.nio.file.Paths;
 
 import com.culturarte.web.ws.cliente.*;
 
-
 @WebServlet("/altaPerfil")
 @MultipartConfig
 public class AltaPerfilServlet extends HttpServlet {
@@ -22,7 +21,6 @@ public class AltaPerfilServlet extends HttpServlet {
     @Override
     public void init() throws ServletException {
         ServletContext context = getServletContext();
-
         this.propController = (IProponenteController) context.getAttribute("ws.proponente");
         this.colaController = (IColaboradorController) context.getAttribute("ws.colaborador");
 
@@ -30,7 +28,6 @@ public class AltaPerfilServlet extends HttpServlet {
             throw new ServletException("¡Error crítico! Los clientes de AltaPerfilServlet no se pudieron cargar desde ClienteInit.");
         }
     }
-
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -40,19 +37,57 @@ public class AltaPerfilServlet extends HttpServlet {
     }
 
     @Override
-    protected void  doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
         req.setCharacterEncoding("UTF-8");
         resp.setContentType("text/html;charset=UTF-8");
 
-        try{
-            String nick = req.getParameter("nick");
+        String nick = req.getParameter("nick");
+        String correo = req.getParameter("correo");
+        String tipoUsuario = req.getParameter("tipoUsuario");
+
+        try {
+
+            boolean nickEnProp = false;
+            boolean nickEnCol = false;
+            boolean correoEnProp = false;
+            boolean correoEnCol = false;
+
+            if (propController == null || colaController == null) {
+                throw new Exception("Servicio de validación no disponible.");
+            }
+
+            try {
+                nickEnProp = propController.obtenerProponente(nick) != null;
+                nickEnCol = colaController.obtenerColaborador(nick) != null;
+
+
+                correoEnProp = propController.obtenerProponenteCorreo(correo) != null;
+                correoEnCol = colaController.obtenerColaboradorCorreo(correo) != null;
+
+            } catch (Exception e) {
+                req.setAttribute("error", "Error al validar usuario: " + e.getMessage());
+                req.getRequestDispatcher("/altaPerfil.jsp").forward(req, resp);
+                return;
+            }
+
+            if (nickEnProp || nickEnCol) {
+                req.setAttribute("error", "El nickname '" + nick + "' ya está en uso.");
+                req.getRequestDispatcher("/altaPerfil.jsp").forward(req, resp);
+                return;
+            }
+
+            if (correoEnProp || correoEnCol) {
+                req.setAttribute("error", "El correo electrónico '" + correo + "' ya está registrado.");
+                req.getRequestDispatcher("/altaPerfil.jsp").forward(req, resp);
+                return;
+            }
+
+
             String nombre = req.getParameter("nombre");
             String apellido = req.getParameter("apellido");
             String contrasenia = req.getParameter("contrasenia");
-            String correo = req.getParameter("correo");
             String fechaNac = req.getParameter("fechaNac");
-
 
             Part filePart = req.getPart("dirImagen");
             String dirImagen = null;
@@ -67,14 +102,10 @@ public class AltaPerfilServlet extends HttpServlet {
                 dirImagen = "imagenes/404.png";
             }
 
-
-            String tipoUsuario = req.getParameter("tipoUsuario");
-
-            if("PROPONENTE".equals(tipoUsuario)){
+            if ("PROPONENTE".equals(tipoUsuario)) {
                 String direccion = req.getParameter("direccion");
                 String biografia = req.getParameter("biografia");
                 String link = req.getParameter("link");
-
 
                 DtoProponente dtoProp = new DtoProponente();
                 dtoProp.setNickname(nick);
@@ -88,13 +119,10 @@ public class AltaPerfilServlet extends HttpServlet {
                 dtoProp.setBiografia(biografia);
                 dtoProp.setLink(link);
 
-
                 propController.altaProponente(dtoProp);
                 req.setAttribute("mensaje", "Perfil " + nick + " creado con exito");
 
-            } else if("COLABORADOR".equals(tipoUsuario)){
-
-
+            } else if ("COLABORADOR".equals(tipoUsuario)) {
                 DtoColaborador dtoCola = new DtoColaborador();
                 dtoCola.setNickname(nick);
                 dtoCola.setNombre(nombre);
@@ -104,11 +132,13 @@ public class AltaPerfilServlet extends HttpServlet {
                 dtoCola.setFechaNac(fechaNac);
                 dtoCola.setDirImagen(dirImagen);
 
-
                 colaController.altaColaborador(dtoCola);
                 req.setAttribute("mensaje", "Perfil " + nick + " creado con exito");
+            } else {
+                req.setAttribute("error", "Debe seleccionar un tipo de usuario.");
+                req.getRequestDispatcher("/altaPerfil.jsp").forward(req, resp);
+                return;
             }
-
 
             HttpSession sesion = req.getSession(true);
             sesion.setAttribute("tipoUsuario", tipoUsuario);
@@ -116,11 +146,14 @@ public class AltaPerfilServlet extends HttpServlet {
             sesion.setAttribute("password", contrasenia);
             sesion.setAttribute("sesion", new Sesion(nick, tipoUsuario, contrasenia));
 
-        } catch(Exception e){
-            req.setAttribute("error", e.getMessage());
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            req.setAttribute("error", "Error inesperado al crear perfil: " + e.getMessage());
             req.getRequestDispatcher("/altaPerfil.jsp").forward(req, resp);
             return;
         }
+
 
         req.getRequestDispatcher("/index.jsp").forward(req, resp);
     }

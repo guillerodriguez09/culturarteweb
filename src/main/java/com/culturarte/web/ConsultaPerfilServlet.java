@@ -65,10 +65,14 @@ public class ConsultaPerfilServlet extends HttpServlet {
         boolean loSigo = false;
         if (nickSession != null && !esPropioPerfil) {
             try {
-                List<String> seguidosPorMi = seguiController.listarSeguidosDeNick(nickSession);
-                if (seguidosPorMi != null) loSigo = seguidosPorMi.contains(nick);
+                int idRelacion = seguiController.conseguirId(nickSession, nick); // nickSession sigue a nick?
+
+                if (idRelacion > 0) {
+                    loSigo = true;
+                }
             } catch (Exception e) {
-                System.err.println("Error al verificar seguimiento: " + e.getMessage());
+                System.err.println("Info: No se encontró seguimiento (o error de conexión): " + e.getMessage());
+                loSigo = false;
             }
         }
         req.setAttribute("loSigo", loSigo);
