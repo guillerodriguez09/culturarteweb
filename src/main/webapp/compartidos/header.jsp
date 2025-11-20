@@ -40,7 +40,10 @@
             <ul class="navbar-nav ms-3">
                 <c:choose>
                     <c:when test="${not empty sessionScope.sesion.nickOMail}">
-                        <li class="nav-item"><span class="nav-link">${sessionScope.sesion.nickOMail}</span></li>
+
+                        <a href="consultaPerfil?nick=${sessionScope.sesion.nickOMail}" class="btn btn-primary mt-auto">
+                            ${sessionScope.sesion.nickOMail}
+                        </a>
                         <li class="nav-item"><a class="nav-link" href="cierreSesion">Salir</a></li>
                     </c:when>
                     <c:otherwise>

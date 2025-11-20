@@ -18,12 +18,12 @@ function validarAltaPerfil() {
         return false;
     }
 
+
     if (inputCorreo.classList.contains("is-invalid")) {
         alert("El correo electrónico ya está registrado.");
         inputCorreo.focus();
         return false;
     }
-
 
     if (!validarCampoVacio(inputNick.value, "nick")) return false;
     if (!validarCampoVacio(nombre, "nombre")) return false;

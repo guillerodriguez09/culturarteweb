@@ -40,8 +40,11 @@ public class AccesoFiltro implements Filter {
         try {
             String ip = req.getRemoteAddr();
             String url = req.getRequestURL().toString();
-            String browser = req.getHeader("User-Agent");
-            String so = System.getProperty("os.name");
+            String useragent = req.getHeader("User-Agent");
+            String browser = extraerBrowser(useragent);
+
+
+            String so = extraerSo(useragent);
 
             DtoAcceso dto = new DtoAcceso();
             dto.setIp(ip);
@@ -60,6 +63,30 @@ public class AccesoFiltro implements Filter {
 
         chain.doFilter(request, response);
     }
+
+    private String extraerBrowser(String usera){
+
+        if(usera.contains("Edg"))return "Edge";
+        if(usera.contains("Firefox"))return "Firefox";
+        if(usera.contains("Safari") && !usera.contains("Chrome")) return "Safari";
+        if(usera.contains("Opera"))return "Opera";
+        if(usera.contains("Chrome"))return "Chrome";
+        return "Otro";
+
+    };
+
+    private String extraerSo(String usera){
+
+        if(usera.contains("Windows"))return "Windows";
+        if(usera.contains("Mac OS"))return "macOS";
+        if(usera.contains("Android")) return "Android";
+        if(usera.contains("iPhone") || usera.contains("iPad")) return "iOS";
+        if(usera.contains("Linux"))return "Linux";
+        return "Otro";
+
+    };
+
+
 
     @Override
     public void destroy() {
