@@ -2,6 +2,30 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ include file="compartidos/header.jsp" %>
 
+<%
+    // recomendaciones al entrar al index
+    HttpSession ses = request.getSession(false);
+    if (ses != null && ses.getAttribute("nick") != null) {
+
+        com.culturarte.web.ws.cliente.IPropuestaController propCtrl =
+                (com.culturarte.web.ws.cliente.IPropuestaController)
+                        application.getAttribute("ws.propuesta");
+
+        String nickActual = (String) ses.getAttribute("nick");
+
+        try {
+            java.util.List<com.culturarte.web.ws.cliente.DtoPropuesta> nuevas =
+                    propCtrl.recomendarPropuestas(nickActual);
+
+            ses.setAttribute("recomendaciones", nuevas);
+
+        } catch (Exception e) {
+            // (opcional) podés loguearlo si querés
+            System.out.println("No se pudieron recargar recomendaciones: " + e.getMessage());
+        }
+    }
+%>
+
 <main class="container mt-5 mb-5 flex-grow-1">
 
     <%
@@ -36,14 +60,14 @@
             </a>
         </div>
     </div>
+
     <c:if test="${not empty sessionScope.recomendaciones}">
         <h3 class="text-center mb-4">Propuestas Recomendadas para ti</h3>
 
         <div class="row">
             <c:forEach var="prop" items="${sessionScope.recomendaciones}">
-
                 <div class="col-md-4 mb-4">
-                    <div class="card h-100"> <%-- h-100 para que todas tengan la misma altura --%>
+                    <div class="card h-100">
 
                         <c:if test="${not empty prop.imagen}">
                             <img src="${prop.imagen}" class="card-img-top" alt="${prop.titulo}" style="object-fit: cover; height: 200px;">
@@ -55,9 +79,8 @@
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title">${prop.titulo}</h5>
                             <span class="badge bg-warning text-dark" title="Puntaje de recomendación">
-                ★ ${prop.puntaje}
-            </span>
-
+                                ★ ${prop.puntaje}
+                            </span>
 
                             <a href="consultarPropuesta?titulo=${prop.titulo}" class="btn btn-primary mt-auto">
                                 Ver la Propuesta
@@ -76,4 +99,3 @@
 </main>
 
 <%@ include file="compartidos/footer.jsp" %>
-

@@ -20,14 +20,9 @@ public class SeguirUsuarioServlet extends HttpServlet {
     @Override
     public void init() throws ServletException {
         ServletContext context = getServletContext();
-
         this.propCtrl = (IProponenteController) context.getAttribute("ws.proponente");
         this.colCtrl = (IColaboradorController) context.getAttribute("ws.colaborador");
         this.segCtrl = (ISeguimientoController) context.getAttribute("ws.seguimiento");
-
-        if (this.propCtrl == null || this.colCtrl == null || this.segCtrl == null) {
-            throw new ServletException("¡Error crítico! Los clientes de SeguirUsuarioServlet no se pudieron cargar desde ClienteInit.");
-        }
     }
 
     @Override
@@ -40,18 +35,19 @@ public class SeguirUsuarioServlet extends HttpServlet {
             return;
         }
 
-        Sesion usuarioSesion = (Sesion) sesion.getAttribute("sesion");
-        String nickActual = usuarioSesion.getNickOMail();
+        Sesion usuario = (Sesion) sesion.getAttribute("sesion");
+        String nickActual = usuario.getNickOMail();
 
         try {
-            List<String> todosUsuarios = new ArrayList<>();
-            todosUsuarios.addAll(this.propCtrl.listarProponentes());
-            todosUsuarios.addAll(this.colCtrl.listarColaboradores());
-            todosUsuarios.removeIf(u -> u.equalsIgnoreCase(nickActual));
-            req.setAttribute("usuarios", todosUsuarios);
+            List<String> lista = new ArrayList<>();
+            lista.addAll(propCtrl.listarProponentes());
+            lista.addAll(colCtrl.listarColaboradores());
+            lista.removeIf(u -> u.equalsIgnoreCase(nickActual));
+
+            req.setAttribute("usuarios", lista);
+
         } catch (Exception e) {
-            req.setAttribute("usuarios", new ArrayList<String>()); // Lista vacía en caso de error
-            req.setAttribute("mensajeError", "Error al cargar usuarios: " + e.getMessage());
+            req.setAttribute("mensajeError", "Error cargando usuarios.");
         }
 
         req.getRequestDispatcher("/seguirUsuario.jsp").forward(req, resp);
@@ -62,43 +58,37 @@ public class SeguirUsuarioServlet extends HttpServlet {
             throws ServletException, IOException {
 
         HttpSession sesion = req.getSession(false);
+
         if (sesion == null || sesion.getAttribute("sesion") == null) {
             resp.sendRedirect("inicioSesion.jsp");
             return;
         }
 
-        Sesion usuarioSesion = (Sesion) sesion.getAttribute("sesion");
-        String nickSeguidor = usuarioSesion.getNickOMail();
-        String tipoSeguidor = usuarioSesion.getTipoUsuario(); // Proponente o Colaborador
+        Sesion usuario = (Sesion) sesion.getAttribute("sesion");
+        String nickSeguidor = usuario.getNickOMail();
         String nickSeguido = req.getParameter("usuarioSeguido");
 
-        if (nickSeguido == null || nickSeguido.isEmpty()) {
-            req.setAttribute("mensajeError", "Debe seleccionar un usuario a seguir.");
-            doGet(req, resp); // recarga la página
-            return;
-        }
-
         try {
-            // Armamos el stub del seguidor (DtoUsuario)
-            DtoUsuario dtoSeguidor = new DtoUsuario();
-            dtoSeguidor.setNickname(nickSeguidor);
+            DtoUsuario dtoSeg = new DtoUsuario();
+            dtoSeg.setNickname(nickSeguidor);
 
-            // Armamos el seguimiento completo
-            DtoSeguimiento dtoSeg = new DtoSeguimiento();
-            dtoSeg.setUsuarioSeguidor(dtoSeguidor);
-            dtoSeg.setUsuarioSeguido(nickSeguido);
+            DtoSeguimiento dto = new DtoSeguimiento();
+            dto.setUsuarioSeguidor(dtoSeg);
+            dto.setUsuarioSeguido(nickSeguido);
 
-            // Llamamos al WS remoto
-            segCtrl.registrarSeguimiento(dtoSeg);
+            segCtrl.registrarSeguimiento(dto);
+
+            IPropuestaController propCtrl =
+                    (IPropuestaController) getServletContext().getAttribute("ws.propuesta");
+
+            List<DtoPropuesta> nuevas = propCtrl.recomendarPropuestas(nickSeguidor);
+            sesion.setAttribute("recomendaciones", nuevas);
 
         } catch (Exception e) {
-            System.err.println("Error al registrar seguimiento: " + e.getMessage());
             req.setAttribute("mensajeError", "Error: " + e.getMessage());
         }
 
-        // Redirigimos al perfil del seguido
-        String tipoUsr = req.getParameter("tipoUsr");
-        resp.sendRedirect("consultaPerfil?nick=" + nickSeguido + "&tipoUsr=" + tipoUsr);
+        resp.sendRedirect("consultaPerfil?nick=" + nickSeguido +
+                "&tipoUsr=" + req.getParameter("tipoUsr"));
     }
-
 }

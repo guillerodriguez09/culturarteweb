@@ -1,5 +1,7 @@
 package com.culturarte.web;
 
+import com.culturarte.web.ws.cliente.DtoPropuesta;
+import com.culturarte.web.ws.cliente.IPropuestaController;
 import com.culturarte.web.ws.cliente.ISeguimientoController;
 
 import javax.servlet.ServletContext;
@@ -20,7 +22,7 @@ public class DejarSeguirUsuarioServlet extends HttpServlet {
         this.segCtrl = (ISeguimientoController) context.getAttribute("ws.seguimiento");
 
         if (this.segCtrl == null) {
-            throw new ServletException("¡Error crítico! El cliente de Seguimiento (ws.seguimiento) no se pudo cargar desde ClienteInit.");
+            throw new ServletException("No se cargó ws.seguimiento");
         }
     }
 
@@ -37,10 +39,10 @@ public class DejarSeguirUsuarioServlet extends HttpServlet {
         String nickActual = (String) sesion.getAttribute("nick");
 
         try {
-            List<String> usuariosSeguidos = segCtrl.listarSeguidosDeNick(nickActual);
-            req.setAttribute("usuariosSeguidos", usuariosSeguidos);
+            List<String> seguidos = segCtrl.listarSeguidosDeNick(nickActual);
+            req.setAttribute("usuariosSeguidos", seguidos);
         } catch (Exception e) {
-            req.setAttribute("error", "Error al cargar seguidos: " + e.getMessage());
+            req.setAttribute("error", "Error cargando seguidos: " + e.getMessage());
         }
 
         req.getRequestDispatcher("/dejarSeguirUsuario.jsp").forward(req, resp);
@@ -51,58 +53,35 @@ public class DejarSeguirUsuarioServlet extends HttpServlet {
             throws ServletException, IOException {
 
         HttpSession sesion = req.getSession(false);
+
         if (sesion == null || sesion.getAttribute("nick") == null) {
-            if ("true".equals(req.getParameter("ajax"))) {
-                resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                return;
-            }
             resp.sendRedirect("inicioSesion.jsp");
             return;
         }
 
         String nickSeguidor = (String) sesion.getAttribute("nick");
         String nickSeguido = req.getParameter("usuarioSeguido");
-        String esAjax = req.getParameter("ajax");
         String tipoUsr = req.getParameter("tipoUsr");
 
-        if (nickSeguido == null || nickSeguido.isEmpty()) {
-            if ("true".equals(esAjax)) {
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                resp.getWriter().write("Usuario a seguir no puede ser nulo.");
-            } else {
-                req.setAttribute("mensajeError", "Debe seleccionar un usuario.");
-                doGet(req, resp);
-            }
-            return;
-        }
-
         try {
-            int idSegui = segCtrl.conseguirId(nickSeguidor.trim(), nickSeguido.trim());
+            int idSegui = segCtrl.conseguirId(nickSeguidor, nickSeguido);
 
             if (idSegui > 0) {
                 segCtrl.cancelarSeguimiento(idSegui);
-                if ("true".equals(esAjax)) {
-                    resp.setStatus(HttpServletResponse.SC_OK);
-                    return;
-                }
-            } else {
-                if ("true".equals(esAjax)) {
-                    resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                    resp.getWriter().write("No se encontró la relación de seguimiento.");
-                    return;
-                } else {
-                    req.setAttribute("mensajeError", "No se encontró seguimiento para cancelar.");
-                }
+
+                IPropuestaController propCtrl =
+                        (IPropuestaController) getServletContext().getAttribute("ws.propuesta");
+
+                List<DtoPropuesta> nuevas = propCtrl.recomendarPropuestas(nickSeguidor);
+                sesion.setAttribute("recomendaciones", nuevas);
             }
+
         } catch (Exception e) {
-            e.printStackTrace();
-            if ("true".equals(esAjax)) {
-                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                resp.getWriter().write("Error interno: " + e.getMessage());
-                return;
-            }
-            req.setAttribute("mensajeError", "Error: " + e.getMessage());
+            req.setAttribute("mensajeError", "Error al dejar de seguir: " + e.getMessage());
         }
-        resp.sendRedirect("consultaPerfil?nick=" + nickSeguido + "&tipoUsr=" + (tipoUsr != null ? tipoUsr : "proponente"));
+
+        resp.sendRedirect("consultaPerfil?nick=" + nickSeguido +
+                "&tipoUsr=" + (tipoUsr != null ? tipoUsr : "proponente"));
     }
 }
+
