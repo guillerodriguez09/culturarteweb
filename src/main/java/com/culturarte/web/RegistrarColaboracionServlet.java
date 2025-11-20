@@ -52,7 +52,6 @@ public class RegistrarColaboracionServlet extends HttpServlet {
             return;
         }
 
-
         req.setAttribute("publicadas", Collections.emptyList());
         req.setAttribute("enFinanciacion", Collections.emptyList());
         req.setAttribute("financiadas", Collections.emptyList());
@@ -102,13 +101,10 @@ public class RegistrarColaboracionServlet extends HttpServlet {
             String tipoRetornoStr = req.getParameter("tipoRetorno");
             String montoStr = req.getParameter("monto");
 
-
             ETipoRetorno tipoRetorno = ETipoRetorno.fromValue(tipoRetornoStr);
             Integer monto = Integer.parseInt(montoStr);
 
-
             String fechaStr = LocalDateTime.now().toString();
-
 
             DtoColaboracion dto = new DtoColaboracion();
             dto.setColaboradorNick(colaboradorNick);
@@ -117,11 +113,19 @@ public class RegistrarColaboracionServlet extends HttpServlet {
             dto.setMonto(monto);
             dto.setFecha(fechaStr);
 
+            // REGISTRA colaboración
+            this.colaboracionCtrl.registrarColaboracion(dto);
 
-            this.colaboracionCtrl.registrarColaboracion(dto); // <- SE USA
+            //REGENERAR RECOMENDACIONES
+            List<DtoPropuesta> nuevas =
+                    this.propuestaCtrl.recomendarPropuestas(colaboradorNick);
+            session.setAttribute("recomendaciones", nuevas);
 
             session.removeAttribute("propuestaSeleccionadaTitulo");
-            resp.sendRedirect(req.getContextPath() + "/consultarPropuesta?titulo=" + propuestaTitulo + "&mensaje=Colaboracion registrada con exito");
+
+            resp.sendRedirect(req.getContextPath() +
+                    "/consultarPropuesta?titulo=" + propuestaTitulo +
+                    "&mensaje=Colaboracion registrada con exito");
 
         } catch (Exception e) {
             req.setAttribute("error", "Error al registrar colaboración: " + e.getMessage());
@@ -129,4 +133,5 @@ public class RegistrarColaboracionServlet extends HttpServlet {
         }
     }
 }
+
 
